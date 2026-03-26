@@ -98,6 +98,10 @@ Comes with a sleek dark theme, responsive design, and intuitive navigation to ex
 </p>
 
 <p align="center">
+  <img src="images/workflows.png" alt="Analytics Overview" width="100%">
+</p>
+
+<p align="center">
   <img src="images/settings.png" alt="Settings Overview" width="100%">
 </p>
 

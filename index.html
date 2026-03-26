@@ -541,7 +541,7 @@
 
           <div class="feature-grid">
             <div class="feature-card">
-              <div class="feature-icon ic-indigo">⬡</div>
+              <div class="feature-icon ic-indigo">📡</div>
               <h3>Live Dashboard</h3>
               <p>
                 Overview stats, active agent cards with collapsible subagent hierarchy, and recent
@@ -549,7 +549,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-emerald">⊞</div>
+              <div class="feature-icon ic-emerald">📋</div>
               <h3>Kanban Board</h3>
               <p>
                 5-column agent status board (Idle / Connected / Working / Completed / Error) with
@@ -557,7 +557,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-amber">≡</div>
+              <div class="feature-icon ic-amber">📂</div>
               <h3>Sessions Table</h3>
               <p>
                 Searchable, filterable, paginated table of all sessions with status badges, agent
@@ -565,7 +565,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-violet">◎</div>
+              <div class="feature-icon ic-violet">🔬</div>
               <h3>Session Detail</h3>
               <p>
                 Per-session agent hierarchy tree (parent/child with expand/collapse) and full
@@ -573,7 +573,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-pink">⊲</div>
+              <div class="feature-icon ic-pink">📰</div>
               <h3>Activity Feed</h3>
               <p>
                 Real-time streaming event log with pause/resume, pagination, and buffering while
@@ -581,23 +581,11 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-cyan">▦</div>
+              <div class="feature-icon ic-cyan">📊</div>
               <h3>Analytics</h3>
               <p>
                 Token usage, tool frequency, agent type distribution, activity heatmap, session
                 trends, and donut charts.
-              </p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon ic-teal">⬡</div>
-              <h3>Workflows</h3>
-              <p>
-                D3.js-powered visualization page with 11 interactive sections: agent orchestration
-                DAG, tool execution Sankey diagram, collaboration network, subagent effectiveness
-                scorecards, workflow pattern detection, model delegation flow, error propagation map,
-                concurrency timeline, session complexity scatter, compaction impact analysis, and
-                per-session drill-in. Cross-filtering, JSON export, and real-time WebSocket
-                auto-refresh.
               </p>
             </div>
             <div class="feature-card">
@@ -609,7 +597,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-rose">⌨</div>
+              <div class="feature-icon ic-rose">🖥️</div>
               <h3>Statusline</h3>
               <p>
                 Standalone CLI statusline showing model, user, git branch, context window bar, and
@@ -617,7 +605,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-emerald">⟳</div>
+              <div class="feature-icon ic-emerald">🔄</div>
               <h3>History Import</h3>
               <p>
                 Automatically imports sessions from <code>~/.claude/</code> on server startup
@@ -626,7 +614,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-cyan">⧉</div>
+              <div class="feature-icon ic-cyan">💾</div>
               <h3>Transcript Cache</h3>
               <p>
                 Stat-based incremental JSONL reader shared across hook handler and compaction
@@ -635,7 +623,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-violet">⊜</div>
+              <div class="feature-icon ic-violet">🌳</div>
               <h3>Subagent Hierarchy</h3>
               <p>
                 Collapsible parent-child agent tree on Dashboard and Session Detail. Agents with
@@ -645,7 +633,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-amber">$</div>
+              <div class="feature-icon ic-amber">💰</div>
               <h3>Cost Tracking</h3>
               <p>
                 Per-model cost estimation with configurable pricing rules. View total and per-session
@@ -654,7 +642,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-indigo">⚙</div>
+              <div class="feature-icon ic-indigo">⚙️</div>
               <h3>Settings &amp; Management</h3>
               <p>
                 Model pricing editor, hook configuration status, JSON data export, session cleanup
@@ -662,7 +650,7 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-blue">⎇</div>
+              <div class="feature-icon ic-blue">🔌</div>
               <h3>Local MCP Server</h3>
               <p>
                 Enterprise-grade local MCP sidecar under <code>mcp/</code> with typed tools,
@@ -671,11 +659,38 @@
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-rose">⚑</div>
+              <div class="feature-icon ic-rose">🧩</div>
               <h3>Claude + Codex Extensions</h3>
               <p>
                 Comprehensive instruction, skills, rules, and custom-agent layers for both Claude
                 Code and Codex, plus helper automation to sync runtime extension directories.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-teal">🔀</div>
+              <h3>Workflow Graphs</h3>
+              <p>
+                D3.js-powered agent orchestration DAG showing spawn patterns across sessions,
+                tool execution Sankey diagram mapping tool-to-tool transitions, and a directed
+                agent pipeline graph revealing which agent types run after which with frequency labels.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-indigo">📊</div>
+              <h3>Workflow Analytics</h3>
+              <p>
+                Subagent effectiveness scorecards with success rings and sparklines, auto-detected
+                workflow patterns, model delegation flow, error propagation by hierarchy depth,
+                agent concurrency swim-lanes, and session complexity bubble charts.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-cyan">🔍</div>
+              <h3>Session Drill-In</h3>
+              <p>
+                Searchable session selector with pagination to explore any session's agent tree,
+                tool call timeline, and event sequence. Cross-filtering from DAG nodes, compaction
+                impact analysis, JSON export, and real-time WebSocket auto-refresh.
               </p>
             </div>
           </div>
@@ -2450,7 +2465,7 @@ npm run codex:sync</code></pre>
 
           <div class="feature-grid">
             <div class="feature-card">
-              <div class="feature-icon ic-amber">$</div>
+              <div class="feature-icon ic-amber">💲</div>
               <h3>Model Pricing</h3>
               <p>
                 Editable table of per-model pricing rules. Each Claude model variant has its own
@@ -2459,7 +2474,7 @@ npm run codex:sync</code></pre>
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-emerald">⊞</div>
+              <div class="feature-icon ic-emerald">🪝</div>
               <h3>Hook Configuration</h3>
               <p>
                 Shows per-hook installation status (PreToolUse, PostToolUse, Stop, SubagentStop,
@@ -2467,7 +2482,7 @@ npm run codex:sync</code></pre>
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-cyan">▦</div>
+              <div class="feature-icon ic-cyan">🗄️</div>
               <h3>Data Management</h3>
               <p>
                 View database row counts and size. Session cleanup: abandon stale active sessions
@@ -2476,7 +2491,7 @@ npm run codex:sync</code></pre>
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-violet">◎</div>
+              <div class="feature-icon ic-violet">📤</div>
               <h3>Data Export</h3>
               <p>
                 Download all sessions, agents, events, token usage, and pricing rules as a single
@@ -2484,7 +2499,7 @@ npm run codex:sync</code></pre>
               </p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon ic-blue">⚡</div>
+              <div class="feature-icon ic-blue">🖧</div>
               <h3>System Info</h3>
               <p>
                 Server uptime, Node.js version, platform, active WebSocket connections. At-a-glance
