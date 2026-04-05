@@ -43,6 +43,8 @@
 - [Performance Characteristics](#performance-characteristics)
 - [Deployment Modes](#deployment-modes)
 - [Statusline Utility](#statusline-utility)
+- [Technology Choices](#technology-choices)
+- [Build & Run Targets](#build--run-targets)
 
 ---
 
