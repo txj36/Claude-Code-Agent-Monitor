@@ -23,10 +23,24 @@ A professional dashboard to track and visualize your Claude Code agent sessions,
 ![Autoprefixer](https://img.shields.io/badge/Autoprefixer-10.4-DD3735?style=flat-square&logo=autoprefixer&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-%3E%3D3.6-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-20.10-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Podman](https://img.shields.io/badge/Podman-4.0-CC342D?style=flat-square&logo=podman&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-1.0-646CFF?style=flat-square&logo=vitest&logoColor=white)
 ![React Testing Library](https://img.shields.io/badge/React_Testing_Library-13.0-FF5733?style=flat-square&logo=testinglibrary&logoColor=white)
+![SSE](https://img.shields.io/badge/SSE-Server_Sent_Events-FF6600?style=flat-square&logo=googlechrome&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-%3E%3D1.5-844FBA?style=flat-square&logo=terraform&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-%3E%3D1.24-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
+![Helm](https://img.shields.io/badge/Helm-3-0F1689?style=flat-square&logo=helm&logoColor=white)
+![Kustomize](https://img.shields.io/badge/Kustomize-5.0-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-2.x-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-10.x-F46800?style=flat-square&logo=grafana&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-Ingress-009639?style=flat-square&logo=nginx&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-ECS%20%7C%20RDS-232F3E?style=flat-square&logo=task&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/Google_Cloud-GKE%20%7C%20SQL-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Azure](https://img.shields.io/badge/Azure-AKS%20%7C%20SQL-0078D4?style=flat-square&logo=cloudflare&logoColor=white)
+![Oracle Cloud](https://img.shields.io/badge/Oracle_Cloud-OKE%20%7C%20DB-F80000?style=flat-square&logo=cloudways&logoColor=white)
+![GitLab CI](https://img.shields.io/badge/GitLab_CI-pipelines-FC6D26?style=flat-square&logo=gitlab&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-4.3-000000?style=flat-square&logo=make&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-automated_builds-2088FF?style=flat-square&logo=githubactions&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-pipelines-2088FF?style=flat-square&logo=githubactions&logoColor=white)
 ![MIT License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
 ---
@@ -499,6 +513,10 @@ flowchart LR
 | **HTTP** | `npm run mcp:start:http` | Remote MCP clients, web integrations, multi-session |
 | **REPL** | `npm run mcp:start:repl` | Ops debugging, manual tool invocation, local admin |
 
+<p align="center">
+  <img src="images/mcp.png" alt="MCP REPL" width="100%">
+</p>
+
 ### MCP Architecture
 
 ```mermaid
@@ -923,6 +941,8 @@ flowchart TD
 
 ## Deployment Modes
 
+We support both development and production deployment modes with different process architectures:
+
 ```mermaid
 graph LR
     subgraph dev["Development — 2 processes"]
@@ -966,6 +986,65 @@ graph LR
     style M_HTTP fill:#0f766e,stroke:#14b8a6,color:#fff
     style M_REPL fill:#0f766e,stroke:#14b8a6,color:#fff
 ```
+
+### Cloud Deployment
+
+The `deployments/` directory provides cloud-agnostic, enterprise-grade infrastructure for deploying the dashboard to production. Supports Helm, Kustomize, and Terraform across AWS, GCP, Azure, and OCI with blue-green, canary, and rolling release strategies.
+
+```mermaid
+graph TB
+  subgraph "Deployment Methods"
+    HELM["⎈ Helm Chart<br/>Parameterized installs"]
+    KUST["📦 Kustomize<br/>Overlay-based patching"]
+    TF["🏗️ Terraform<br/>Full cloud provisioning"]
+  end
+
+  subgraph "Cloud Providers"
+    AWS["☁️ AWS<br/>ECS Fargate + ALB"]
+    GCP["☁️ GCP<br/>Cloud Run + GCLB"]
+    AZ["☁️ Azure<br/>ACI + App Gateway"]
+    OCI["☁️ OCI<br/>OKE + LBaaS"]
+  end
+
+  subgraph "Release Strategies"
+    ROLL["Rolling Update"]
+    BG["Blue-Green"]
+    CAN["Canary + Analysis"]
+  end
+
+  HELM & KUST --> ROLL & BG & CAN
+  TF --> AWS & GCP & AZ & OCI
+
+  style HELM fill:#0f1689,color:#fff
+  style KUST fill:#326ce5,color:#fff
+  style TF fill:#7b42bc,color:#fff
+  style AWS fill:#ff9900,color:#fff
+  style GCP fill:#4285f4,color:#fff
+  style AZ fill:#0078d4,color:#fff
+  style OCI fill:#f80000,color:#fff
+```
+
+```bash
+# Helm (recommended for Kubernetes)
+helm install agent-monitor deployments/helm/agent-monitor \
+  -f deployments/helm/agent-monitor/values-production.yaml \
+  -n agent-monitor --create-namespace
+
+# Kustomize
+kubectl apply -k deployments/kubernetes/overlays/production
+
+# Terraform (full infra + app)
+cd deployments/terraform/providers/aws
+terraform init && terraform apply -var-file=../../environments/production/terraform.tfvars
+
+# Script orchestrator
+./deployments/scripts/deploy.sh --env production --method helm --strategy blue-green
+```
+
+The deployment stack includes CI/CD pipelines (GitHub Actions + GitLab CI), comprehensive monitoring (Prometheus, Grafana, Alertmanager with 13 alert rules), operational scripts (deploy, rollback, blue-green switch, backup/restore, teardown), and a full security posture (Restricted Pod Security Standard, TLS 1.3, network policies, Trivy scanning).
+
+> [!NOTE]
+> 📘 **Full deployment guide:** See [DEPLOYMENT.md](DEPLOYMENT.md) for step-by-step instructions, architecture diagrams, and operational workflows.
 
 ---
 
@@ -1065,6 +1144,21 @@ agent-dashboard/
 |   |   |-- ui/                  # ANSI banner, colors, formatter, tables
 |   |   +-- types/               # Shared MCP type definitions
 |   +-- build/                   # Built MCP runtime output
+|-- deployments/
+|   |-- README.md                # Deployment infrastructure reference
+|   |-- terraform/               # Cloud provisioning (AWS, GCP, Azure, OCI)
+|   |   |-- modules/             # Reusable modules (networking, compute, db, lb, monitoring)
+|   |   |-- providers/           # Cloud-specific implementations
+|   |   +-- environments/        # Per-env tfvars (dev, staging, production)
+|   |-- kubernetes/              # Kustomize manifests
+|   |   |-- base/                # 11 base resources (deployment, service, ingress, hpa, etc.)
+|   |   |-- overlays/            # Environment overlays (dev, staging, production)
+|   |   |-- components/          # Optional add-ons (mcp-sidecar, monitoring)
+|   |   +-- strategies/          # Blue-green and canary deployment strategies
+|   |-- helm/agent-monitor/      # Helm chart with 12 templates and 4 value sets
+|   |-- scripts/                 # Operational scripts (deploy, rollback, backup, teardown)
+|   |-- monitoring/              # Prometheus rules, Grafana dashboards, Alertmanager config
+|   +-- ci/                      # CI/CD pipelines (GitHub Actions, GitLab CI)
 |-- .codex/
 |   |-- config.toml              # Codex runtime configuration
 |   |-- README.md                # Codex setup guide for agents and skills

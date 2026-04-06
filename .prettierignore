@@ -11,3 +11,5 @@ client/package-lock.json
 *.md
 index.html
 *.yml
+*.yaml
+mcp/build/
