@@ -145,7 +145,7 @@ mermaid.initialize({
 
     const revealSiblings = Array.from(parent.children).filter((child) => targetSet.has(child));
     const revealIndex = revealSiblings.indexOf(target);
-    target.style.setProperty("--reveal-delay", `${Math.min(revealIndex * 70, 350)}ms`);
+    target.style.setProperty("--reveal-delay", `${Math.min(revealIndex * 50, 250)}ms`);
   });
 
   if (prefersReducedMotion.matches || !("IntersectionObserver" in window)) {

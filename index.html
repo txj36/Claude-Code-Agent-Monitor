@@ -661,12 +661,9 @@
               <div class="feature-icon ic-blue">🔌</div>
               <h3>Local MCP Server</h3>
               <p>
-                Enterprise-grade local MCP sidecar under <code>mcp/</code> with three transport
-                modes (stdio, HTTP+SSE, interactive REPL), 25 typed tools across 6 domains,
-                retry-aware API access, and tiered policy gates for mutation and destructive
-                operations. HTTP mode serves Streamable HTTP and legacy SSE protocols. REPL mode
-                provides tab-completed interactive tool invocation with colored output and JSON
-                syntax highlighting.
+                Local MCP sidecar with three transport modes (stdio, HTTP+SSE, interactive REPL),
+                25 typed tools across 6 domains, retry-aware API access, and tiered policy gates
+                for mutation and destructive operations.
               </p>
             </div>
             <div class="feature-card">
@@ -2280,6 +2277,13 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
             server supports three transport modes: stdio for host integration, HTTP+SSE for remote
             clients, and an interactive REPL for operator debugging.
           </p>
+
+          <div class="screenshot-gallery gallery-single">
+            <div class="screenshot-card">
+              <img src="images/mcp.png" alt="MCP Server interactive REPL showing the MCP Tools banner, server info, and tool listing with colored output" loading="lazy" />
+              <div class="screenshot-caption"><span class="caption-icon">🔧</span> MCP Server REPL — interactive tool invocation with colored output</div>
+            </div>
+          </div>
 
           <div class="diagram-wrap">
             <!-- prettier-ignore -->
