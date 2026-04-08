@@ -592,8 +592,8 @@
               <div class="feature-icon ic-cyan">📊</div>
               <h3>Analytics</h3>
               <p>
-                Token usage, tool frequency, agent type distribution, activity heatmap, session
-                trends, and donut charts.
+                Token usage, tool frequency, agent type distribution, activity heatmap (day-of-week
+                aligned, centered), session trends, and donut charts.
               </p>
             </div>
             <div class="feature-card">
@@ -618,7 +618,10 @@
               <p>
                 Automatically imports sessions from <code>~/.claude/</code> on server startup
                 with correct historical timestamps. Recently-modified transcripts are imported
-                as active sessions so the dashboard reflects real state immediately.
+                as active sessions so the dashboard reflects real state immediately. Deep JSONL
+                extraction captures API errors (quota/rate limits), per-turn durations, thinking
+                blocks, usage extras (service tier, speed), and subagent JSONL files for
+                per-subagent model, token, and tool breakdowns.
               </p>
             </div>
             <div class="feature-card">
@@ -628,6 +631,9 @@
                 Stat-based incremental JSONL reader shared across hook handler and compaction
                 scanner. Avoids duplicate I/O, bounds memory with automatic eviction on session
                 end, and enables smarter session reactivation from transcript activity.
+                Real-time extraction detects API errors (<code>APIError</code> events),
+                turn durations (<code>TurnDuration</code> events), thinking blocks, and
+                usage extras as sessions progress.
               </p>
             </div>
             <div class="feature-card">
@@ -687,9 +693,11 @@
               <div class="feature-icon ic-indigo">📊</div>
               <h3>Workflow Analytics</h3>
               <p>
-                Subagent effectiveness scorecards with success rings and sparklines, auto-detected
-                workflow patterns, model delegation flow, error propagation by hierarchy depth,
-                agent concurrency swim-lanes, and session complexity bubble charts.
+                Subagent effectiveness scorecards with success rings, sparklines, and weekly
+                activity with day-of-week labels (Mon-Sun) with tooltips. Auto-detected
+                workflow patterns, model delegation flow, error propagation map with horizontal
+                bars and API error cards, agent concurrency swim-lanes, and session complexity
+                bubble charts. Status filter (Active/Completed/All) works end-to-end.
               </p>
             </div>
             <div class="feature-card">
@@ -806,6 +814,22 @@
                     <span class="status-chip chip-completed"
                       ><span class="chip-dot"></span>Completed</span
                     >. Detected via <code>isCompactSummary</code> entries in the transcript. Token baselines preserve pre-compaction totals. Periodic scanner (every 2 min) catches compactions when no hooks fire.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>APIError</code></td>
+                  <td>API error detected in transcript</td>
+                  <td>
+                    Extracted from JSONL during history import or real-time transcript scanning.
+                    Captures quota limits, rate limits, and other API failures.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>TurnDuration</code></td>
+                  <td>Per-turn timing recorded</td>
+                  <td>
+                    Extracted from JSONL turn boundaries. Records the duration of each
+                    assistant turn for latency analysis.
                   </td>
                 </tr>
                 <tr>
@@ -1132,7 +1156,7 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
                 <tr>
                   <td><code>import-history</code></td>
                   <td><code>npm run import-history</code></td>
-                  <td>Import historical Claude Code sessions from <code>~/.claude</code></td>
+                  <td>Import historical Claude Code sessions from <code>~/.claude</code> with deep JSONL extraction (API errors, turn durations, thinking blocks, subagent data)</td>
                 </tr>
                 <tr>
                   <td><code>clear-data</code></td>
@@ -1570,7 +1594,8 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
                   <td>
                     Aggregate workflow visualization data (agent orchestration, tool transitions,
                     collaboration networks, workflow patterns, model delegation, error propagation,
-                    concurrency, session complexity, compaction impact). Per-session drill-in with
+                    concurrency, session complexity, compaction impact). Accepts
+                    <code>?status=active|completed</code> filter. Per-session drill-in with
                     agent tree, tool timeline, and events.
                   </td>
                 </tr>
@@ -1649,13 +1674,13 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
             <div class="route-item">
               <span class="route-path">/analytics</span>
               <span class="route-desc"
-                >Analytics — token usage, heatmap, tool charts, donut charts</span
+                >Analytics — token usage, heatmap (day-of-week aligned), tool charts, donut charts</span
               >
             </div>
             <div class="route-item">
               <span class="route-path">/workflows</span>
               <span class="route-desc"
-                >Workflows — D3.js visualizations, cross-filtering, session drill-in</span
+                >Workflows — D3.js visualizations, cross-filtering, status filter, session drill-in</span
               >
             </div>
             <div class="route-item">
@@ -2126,7 +2151,8 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
               <span class="route-desc"
                 >Aggregate workflow data — orchestration graphs, tool flows, effectiveness,
                 patterns, model delegation, error propagation, concurrency, complexity,
-                compaction impact</span
+                compaction impact. Accepts <code>?status=active|completed</code> query param
+                to filter by workflow status</span
               >
             </div>
             <div class="route-item">
@@ -2439,7 +2465,7 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
                 </tr>
                 <tr>
                   <td><code>scripts/import-history.js</code></td>
-                  <td>Imports historical session data into local database</td>
+                  <td>Imports historical session data into local database with deep JSONL extraction (API errors, turn durations, thinking blocks, usage extras, subagent breakdowns)</td>
                 </tr>
                 <tr>
                   <td><code>scripts/seed.js</code></td>

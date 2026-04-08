@@ -138,17 +138,18 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 | **Sessions**                       | Searchable, filterable, paginated table of all Claude Code sessions                                                                                                                                                                                                          |
 | **Session Detail**                 | Per-session agent hierarchy tree (parent/child) and full event timeline                                                                                                                                                                                                      |
 | **Activity Feed**                  | Real-time streaming event log with pause/resume and pagination                                                                                                                                                                                                               |
-| **Analytics**                      | Token usage, tool frequency, activity heatmap, session trends, live/offline connection indicator                                                                                                                                                                             |
+| **Analytics**                      | Token usage, tool frequency, activity heatmap (centered, day-of-week aligned starting Sunday, day-name tooltips), session trends, live/offline connection indicator                                                                                                           |
 | **Live Updates**                   | WebSocket push -- no polling, instant UI updates                                                                                                                                                                                                                             |
 | **Auto-Discovery**                 | Sessions and agents are created automatically from hook events                                                                                                                                                                                                               |
-| **History Import**                 | Automatically imports legacy sessions from `~/.claude/` on server startup. Recently-modified JSONL files (< 10 min) are imported as "active" with idle agents, so sessions running before the server started appear immediately                                              |
+| **History Import**                 | Imports sessions from `~/.claude/` on startup. Enhanced JSONL extraction: API errors (quota/rate/invalid_request), turn durations, entrypoint (cli/sdk-ts), permission modes, thinking block counts, usage extras (service_tier, speed, inference_geo), tool result errors, and subagent JSONL files (`subagents/agent-*.jsonl` with `.meta.json`). Backfills existing sessions on re-import. Recent JSONL files (< 10 min) are imported as "active" |
 | **Subagent Hierarchy**             | Collapsible parent-child agent tree on Dashboard and Session Detail. Agents with subagents show expand/collapse chevrons; leaf agents show a dot indicator. Auto-expands when subagents are active                                                                           |
 | **Background Agents**              | Correctly tracks backgrounded subagents without premature completion                                                                                                                                                                                                         |
 | **Cost Tracking**                  | Per-model cost estimation with configurable pricing rules and per-session breakdowns. Compaction-aware token accounting preserves totals across context compressions. Transcript reads are cached with incremental byte-offset updates for efficient token extraction        |
+| **Transcript Cache**               | Real-time extraction from JSONL transcripts: tokens, compactions, API errors (`isApiErrorMessage` entries stored as `APIError` events), turn durations (stored as `TurnDuration` events), thinking block counts, and usage extras (service_tier, speed, inference_geo). Session metadata is enriched with these fields in real-time |
 | **Notifications**                  | Browser notifications for session starts, completions, errors, and subagent spawns. Configurable per-event toggles with permission management                                                                                                                                |
 | **Settings**                       | System info, hook status, model pricing management, notification preferences, data export, session cleanup                                                                                                                                                                   |
 | **MCP Server (Local)**             | Enterprise-grade local MCP server in `mcp/` with three transport modes (stdio, HTTP+SSE, interactive REPL), 25 typed tools across 6 domains, strict input schemas, retry/backoff, localhost-only API enforcement, and tiered mutation/destructive safety gates. HTTP mode serves Streamable HTTP (2025-11-25) and legacy SSE (2024-11-05) on configurable port. REPL mode provides tab-completed interactive tool invocation with colored output |
-| **Workflows**                      | D3.js-powered visualization page with 11 interactive sections: agent orchestration DAG, tool execution Sankey diagram, collaboration network, subagent effectiveness scorecards, detected workflow patterns, model delegation flow, error propagation map, concurrency timeline, session complexity scatter, compaction impact analysis, and per-session drill-in with agent tree and tool timeline. Cross-filtering, JSON export, and real-time WebSocket auto-refresh with 3-second debounce |
+| **Workflows**                      | D3.js-powered visualization page with 11 interactive sections: agent orchestration DAG, tool execution Sankey diagram, collaboration network, subagent effectiveness (day-of-week charts with rich tooltips), detected workflow patterns, model delegation flow, error propagation map (horizontal bars with rate badges, agent type breakdown, API/session error cards), concurrency timeline, session complexity scatter, compaction impact analysis, and per-session drill-in. Status filter tabs (Active Only / Completed / All) filter all 11 sections. Cross-filtering, JSON export, and real-time WebSocket auto-refresh with 3-second debounce |
 | **Compaction Tracking**            | Detects `/compact` events from JSONL transcripts, creates compaction agents and events. Backfills legacy compactions on startup. Periodic scanner catches compactions within 2 minutes even when no hooks fire. Shares the transcript cache so no duplicate file reads occur |
 | **Subsessions/Resumed Sessions**   | Automatically reactivates sessions when new events arrive, correctly handles `/resume` and orphaned sessions. Periodic sweep (every 2 min) marks abandoned sessions that slip past event-based detection                                                                     |
 | **Pre-Existing Session Detection** | Sessions already running when the server starts are imported as "active" (based on recent JSONL file modification). Stop events also reactivate imported completed/abandoned sessions, so the first hook from an in-progress session always surfaces it on the dashboard     |
@@ -317,6 +318,7 @@ sequenceDiagram
    - On `SessionStart`, any other active session with no activity for 5+ minutes is automatically marked "abandoned" with its agents completed. This handles `/resume` inside a session, Ctrl+C, and other scenarios where a session is orphaned without a clean `SessionEnd`
    - Reactivates completed/error/abandoned sessions when new work events arrive (session resumed). Stop and SubagentStop events also reactivate completed/abandoned sessions — this handles pre-existing sessions imported before the server started, where the first hook event may be a Stop
    - Detects conversation compaction (`isCompactSummary` entries in the JSONL transcript) and creates `Compaction` agents + events. Token baselines are preserved across compactions so no usage is lost. Transcript reads use a shared stat-based cache with incremental byte-offset reads — only new bytes appended since the last read are parsed, giving ~50x speedup for long sessions
+   - Extracts API errors (`isApiErrorMessage` entries: quota limits, rate limits, invalid_request) and raw `type: "error"` responses from JSONL transcripts, stored as `APIError` events. Turn durations (`system` subtype `turn_duration`) are stored as `TurnDuration` events. Tool result errors (`toolUseResult.is_error`) are tracked as `ToolError` events
    - A periodic server sweep (every 2 min) catches abandoned sessions and new compactions that slipped past event-based detection (e.g., `/compact` fires no hook, `/resume` within seconds of session creation). The sweep shares the transcript cache with the hook handler, avoiding duplicate I/O. Abandoned session cleanup also evicts the transcript cache entry to bound memory
 4. **WebSocket** broadcasts the change to all connected clients
 5. **UI** receives the update and re-renders the affected components
@@ -683,7 +685,7 @@ All endpoints return JSON. Error responses follow the shape `{ error: { code, me
 
 | Method | Path                          | Description                                             |
 | ------ | ----------------------------- | ------------------------------------------------------- |
-| `GET`  | `/api/workflows`              | Aggregate workflow data (orchestration, tools, patterns) |
+| `GET`  | `/api/workflows`              | Aggregate workflow data (orchestration, tools, patterns). Optional `?status=active\|completed` query param filters all 11 data sections by session status |
 | `GET`  | `/api/workflows/session/:id`  | Per-session drill-in (agent tree, tool timeline, events) |
 
 ### Settings
@@ -737,6 +739,9 @@ The dashboard processes these Claude Code hook types:
 | `Notification` | Agent notification             | Logs event. Compaction-related notifications are tagged as `Compaction` events. Triggers a browser notification if the user has notifications enabled |
 | `SessionEnd`   | Claude Code CLI process exits  | Marks all agents and the session as `completed`                                              |
 | `Compaction`   | `/compact` detected in JSONL   | Creates a compaction subagent (type `compaction`) and Compaction event. Detected via `isCompactSummary` entries in the transcript JSONL. Also detected by periodic scanner for active sessions |
+| `APIError`     | API error in JSONL transcript  | Extracted from `isApiErrorMessage` entries (quota, rate limit, invalid_request) and raw `type: "error"` responses. Stored as event with error details |
+| `TurnDuration` | Turn timing in JSONL transcript| Extracted from `system` subtype `turn_duration` messages with `durationMs`. Stored as event for turn-level timing analysis |
+| `ToolError`    | Tool result error in JSONL     | Extracted from `toolUseResult.is_error` entries. Tracks tool-level failures for error propagation analysis |
 
 ---
 
@@ -1084,7 +1089,7 @@ agent-dashboard/
 |       |-- pricing.js           # Model pricing CRUD and cost calculation
 |       +-- settings.js          # System info, data management, export, cleanup
 |   +-- lib/
-|       +-- transcript-cache.js  # Stat-based JSONL transcript cache with incremental reads
+|       +-- transcript-cache.js  # Stat-based JSONL transcript cache with incremental reads. Extracts tokens, compactions, API errors, turn durations, thinking blocks, and usage extras (service_tier, speed, inference_geo)
 |   +-- compat-sqlite.js         # node:sqlite compatibility wrapper (fallback for better-sqlite3)
 |-- client/
 |   |-- package.json             # Client dependencies
@@ -1137,7 +1142,7 @@ agent-dashboard/
 |-- scripts/
 |   |-- hook-handler.js          # Lightweight stdin-to-HTTP forwarder
 |   |-- install-hooks.js         # Auto-configures ~/.claude/settings.json
-|   |-- import-history.js        # Imports legacy sessions from ~/.claude/
+|   |-- import-history.js        # Imports sessions from ~/.claude/ with enhanced JSONL extraction (API errors, turn durations, entrypoint, permission modes, thinking blocks, usage extras, tool errors, subagent JSONL files)
 |   +-- seed.js                  # Sample data generator
 |-- mcp/
 |   |-- package.json             # MCP package scripts + dependencies
