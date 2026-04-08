@@ -568,8 +568,9 @@
               <div class="feature-icon ic-amber">📂</div>
               <h3>Sessions Table</h3>
               <p>
-                Searchable, filterable, paginated table of all sessions with status badges, agent
-                counts, and duration.
+                Searchable, filterable, paginated table of all sessions with color-coded status
+                badges, agent counts, duration, and model info. Filter by active, completed,
+                error, or abandoned status. Click any row to drill into the full session detail.
               </p>
             </div>
             <div class="feature-card">
@@ -584,44 +585,50 @@
               <div class="feature-icon ic-pink">📰</div>
               <h3>Activity Feed</h3>
               <p>
-                Real-time streaming event log with pause/resume, pagination, and buffering while
-                paused.
+                Real-time streaming event log showing tool calls, agent state changes, errors,
+                and compaction events as they happen. Pause/resume with buffering, paginated
+                history, and automatic scrolling. Each entry is color-coded by event type.
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon ic-cyan">📊</div>
               <h3>Analytics</h3>
               <p>
-                Token usage, tool frequency, agent type distribution, activity heatmap (day-of-week
-                aligned, centered), session trends, and donut charts.
+                Token usage breakdown by model, tool frequency bar charts, agent type distribution,
+                52-week activity heatmap (day-of-week aligned with tooltips), 30-day sparkline
+                trends, session outcome donut charts, and cost summary. Live/offline indicator
+                with auto-refresh.
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon ic-blue">⚡</div>
               <h3>WebSocket Push</h3>
               <p>
-                Sub-5ms update latency. Automatic 2-second reconnection. Heartbeat ping/pong
-                dead-connection detection.
+                All UI updates are pushed over WebSocket with sub-5ms latency — no polling.
+                Automatic 2-second reconnection on disconnect, heartbeat ping/pong for
+                dead-connection detection, and a visual connection indicator in the sidebar
+                so you always know when you're live.
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon ic-rose">🖥️</div>
               <h3>Statusline</h3>
               <p>
-                Standalone CLI statusline showing model, user, git branch, context window bar, and
-                token counts.
+                Standalone CLI statusline for Claude Code showing model name, user, working
+                directory, git branch, a color-coded context window usage bar (green/yellow/red),
+                and token counts. ANSI-colored output that updates on every turn. Python-based
+                with a shell wrapper for easy integration.
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon ic-emerald">🔄</div>
               <h3>History Import</h3>
               <p>
-                Automatically imports sessions from <code>~/.claude/</code> on server startup
-                with correct historical timestamps. Recently-modified transcripts are imported
-                as active sessions so the dashboard reflects real state immediately. Deep JSONL
-                extraction captures API errors (quota/rate limits), per-turn durations, thinking
-                blocks, usage extras (service tier, speed), and subagent JSONL files for
-                per-subagent model, token, and tool breakdowns.
+                Automatically imports sessions from <code>~/.claude/</code> on startup with
+                correct timestamps. Deep JSONL extraction captures API errors, per-turn
+                durations, thinking blocks, usage extras, and parses subagent JSONL files for
+                per-subagent model, token, and tool breakdowns. Recently-modified sessions
+                are imported as active so the dashboard reflects real state immediately.
               </p>
             </div>
             <div class="feature-card">
@@ -629,11 +636,9 @@
               <h3>Transcript Cache</h3>
               <p>
                 Stat-based incremental JSONL reader shared across hook handler and compaction
-                scanner. Avoids duplicate I/O, bounds memory with automatic eviction on session
-                end, and enables smarter session reactivation from transcript activity.
-                Real-time extraction detects API errors (<code>APIError</code> events),
-                turn durations (<code>TurnDuration</code> events), thinking blocks, and
-                usage extras as sessions progress.
+                scanner. Avoids duplicate I/O with byte-offset reads, bounds memory via LRU
+                eviction, and detects API errors, turn durations, thinking blocks, and usage
+                extras from live transcripts in real-time as sessions progress.
               </p>
             </div>
             <div class="feature-card">
@@ -659,8 +664,11 @@
               <div class="feature-icon ic-indigo">⚙️</div>
               <h3>Settings &amp; Management</h3>
               <p>
-                Model pricing editor, hook configuration status, JSON data export, session cleanup
-                (abandon stale, purge old), and system information dashboard.
+                Model pricing editor with per-token rate configuration, hook installation status
+                and one-click reinstall, full JSON data export, session cleanup controls (abandon
+                stale sessions, purge old data by age), browser notification preferences with
+                per-event toggles, and a system information dashboard showing DB stats and
+                server health.
               </p>
             </div>
             <div class="feature-card">
@@ -677,7 +685,9 @@
               <h3>Claude + Codex Extensions</h3>
               <p>
                 Comprehensive instruction, skills, rules, and custom-agent layers for both Claude
-                Code and Codex, plus helper automation to sync runtime extension directories.
+                Code and Codex. Includes path-scoped rules for backend, frontend, MCP, and docs,
+                reusable skills for onboarding, feature shipping, debugging, and MCP operations,
+                plus specialized subagents for backend, frontend, and MCP code review.
               </p>
             </div>
             <div class="feature-card">
@@ -693,11 +703,10 @@
               <div class="feature-icon ic-indigo">📊</div>
               <h3>Workflow Analytics</h3>
               <p>
-                Subagent effectiveness scorecards with success rings, sparklines, and weekly
-                activity with day-of-week labels (Mon-Sun) with tooltips. Auto-detected
-                workflow patterns, model delegation flow, error propagation map with horizontal
-                bars and API error cards, agent concurrency swim-lanes, and session complexity
-                bubble charts. Status filter (Active/Completed/All) works end-to-end.
+                Subagent effectiveness scorecards with success rings and day-of-week activity
+                charts. Auto-detected workflow patterns, model delegation flow, error propagation
+                with horizontal bars and API error cards, concurrency swim-lanes, and complexity
+                bubble charts. Status filter (Active/Completed/All) filters all sections.
               </p>
             </div>
             <div class="feature-card">

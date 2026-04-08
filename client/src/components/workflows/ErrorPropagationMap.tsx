@@ -65,8 +65,8 @@ export function ErrorPropagationMap({ data }: ErrorPropagationMapProps) {
     <div className="flex flex-col gap-4">
       {/* Error rate summary bar */}
       <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/15">
-        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-          <span className="text-sm font-bold text-red-400 tabular-nums">{errorRatePct}%</span>
+        <div className="flex-shrink-0 min-w-[2.75rem] h-10 px-2 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <span className="text-[13px] font-bold text-red-400 tabular-nums whitespace-nowrap">{errorRatePct}%</span>
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-red-300">
