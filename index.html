@@ -376,6 +376,9 @@
           <a href="#mcp-agent-extensions" class="nav-link"
             ><span class="nav-icon">◈</span>MCP &amp; Agent Extensions</a
           >
+          <a href="#plugin-marketplace" class="nav-link"
+            ><span class="nav-icon">◈</span>Plugin Marketplace</a
+          >
           <a href="#statusline" class="nav-link"
             ><span class="nav-icon">◈</span>Statusline Utility</a
           >
@@ -716,6 +719,16 @@
                 Searchable session selector with pagination to explore any session's agent tree,
                 tool call timeline, and event sequence. Cross-filtering from DAG nodes, compaction
                 impact analysis, JSON export, and real-time WebSocket auto-refresh.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-violet">🏪</div>
+              <h3>Plugin Marketplace</h3>
+              <p>
+                Official Claude Code plugin marketplace with 5 plugins (18 skills, 4 agents, 3 CLI
+                tools). Deep analytics with compaction baselines, productivity automation, developer
+                diagnostics, AI-powered insights via workflow intelligence, and dashboard MCP
+                integration. Install with <code>claude plugin install</code>.
               </p>
             </div>
           </div>
@@ -2487,6 +2500,185 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
               </tbody>
             </table>
           </div>
+        </section>
+
+        <!-- ─── Plugin Marketplace ──────────────────────────────────────────── -->
+        <section id="plugin-marketplace">
+          <div class="section-label">◈ Integrations</div>
+          <h2>Plugin Marketplace</h2>
+          <p>
+            The Agent Monitor ships with an official Claude Code plugin marketplace containing five
+            production-ready plugins. These extend Claude Code with skills, agents, hooks, CLI tools,
+            and MCP integration — all grounded in the real data model (token tracking with compaction
+            baselines, cost calculation via pattern-matched pricing rules, workflow intelligence with
+            11 datasets per session, and session metadata including thinking blocks, turn counts, and
+            inference geography).
+          </p>
+
+          <h3>Installation</h3>
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># Add the marketplace
+claude plugin marketplace add hoangsonww/Claude-Code-Agent-Monitor
+
+# Install individual plugins
+claude plugin install ccam-analytics@hoangsonww-claude-code-agent-monitor
+claude plugin install ccam-productivity@hoangsonww-claude-code-agent-monitor
+claude plugin install ccam-devtools@hoangsonww-claude-code-agent-monitor
+claude plugin install ccam-insights@hoangsonww-claude-code-agent-monitor
+claude plugin install ccam-dashboard@hoangsonww-claude-code-agent-monitor</code></pre>
+
+          <h3>Available Plugins</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Plugin</th>
+                  <th>Skills</th>
+                  <th>Agent</th>
+                  <th>CLI Tools</th>
+                  <th>Focus</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>ccam-analytics</strong></td>
+                  <td>session-report, cost-breakdown, usage-trends, productivity-score</td>
+                  <td>analytics-advisor</td>
+                  <td><code>ccam-stats</code></td>
+                  <td>Token usage (4 types + baselines), cost via pricing engine, daily trends, productivity scoring</td>
+                </tr>
+                <tr>
+                  <td><strong>ccam-productivity</strong></td>
+                  <td>daily-standup, weekly-report, sprint-summary, workflow-optimizer</td>
+                  <td>productivity-coach</td>
+                  <td>—</td>
+                  <td>Standup reports, sprint tracking, workflow optimization via 11 workflow intelligence datasets</td>
+                </tr>
+                <tr>
+                  <td><strong>ccam-devtools</strong></td>
+                  <td>session-debug, hook-diagnostics, data-export, health-check</td>
+                  <td>issue-triager</td>
+                  <td><code>ccam-doctor</code>, <code>ccam-export</code></td>
+                  <td>Session debugging, hook diagnostics, data export (JSON/CSV), system health</td>
+                </tr>
+                <tr>
+                  <td><strong>ccam-insights</strong></td>
+                  <td>pattern-detect, anomaly-alert, optimization-suggest, session-compare</td>
+                  <td>insights-advisor</td>
+                  <td>—</td>
+                  <td>Pattern detection via tool flow transitions, anomaly alerting, optimization, session comparison</td>
+                </tr>
+                <tr>
+                  <td><strong>ccam-dashboard</strong></td>
+                  <td>dashboard-status, quick-stats</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Dashboard connector with MCP integration and one-line metric summaries</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Skill Usage Examples</h3>
+          <div class="code-header"><span class="code-lang">claude code</span></div>
+          <pre><code># Analytics — session report with per-model token breakdown + cost
+/ccam-analytics:session-report latest
+
+# Analytics — cost breakdown with cache efficiency analysis
+/ccam-analytics:cost-breakdown this week
+
+# Productivity — daily standup grouped by project
+/ccam-productivity:daily-standup today
+
+# Productivity — workflow optimization using workflow intelligence API
+/ccam-productivity:workflow-optimizer analyze
+
+# DevTools — debug a session's full event chain
+/ccam-devtools:session-debug errors
+
+# Insights — detect tool flow patterns and anti-patterns
+/ccam-insights:pattern-detect tools
+
+# Dashboard — one-line metrics summary
+/ccam-dashboard:quick-stats</code></pre>
+
+          <h3>CLI Tools</h3>
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># Quick terminal dashboard
+ccam-stats                  # Sessions, costs (per-model), tokens (with baselines)
+ccam-stats --cost           # Cost summary with matched pricing rules
+ccam-stats --tokens         # Token usage including compaction baselines
+ccam-stats --json           # Raw JSON output
+
+# System diagnostics
+ccam-doctor                 # Full diagnostic: API, endpoints, database, hooks, freshness
+ccam-doctor --quick         # Basic connectivity check
+
+# Data export
+ccam-export sessions --format csv --limit 500
+ccam-export all --output backup.json</code></pre>
+
+          <h3>Plugin Architecture</h3>
+          <p>
+            Each plugin follows the official Claude Code plugin specification. The marketplace manifest
+            at <code>.claude-plugin/marketplace.json</code> catalogs all five plugins. Each plugin
+            directory contains:
+          </p>
+          <div class="code-header"><span class="code-lang">text</span></div>
+          <pre><code>plugins/ccam-{name}/
+├── .claude-plugin/plugin.json    # Plugin manifest (name, version, description)
+├── skills/{skill-name}/SKILL.md  # Skill definitions with $ARGUMENTS
+├── agents/{agent-name}.md        # Agent definitions (model, tools, instructions)
+├── hooks/hooks.json              # Event hooks (fail-safe, non-blocking)
+├── bin/{cli-tool}                # CLI scripts (added to PATH)
+├── .mcp.json                     # MCP server configuration (dashboard plugin)
+└── settings.json                 # Plugin settings (dashboard plugin)</code></pre>
+
+          <h3>Data Model Reference</h3>
+          <p>
+            All plugins query the Agent Monitor API at <code>http://localhost:4820</code>. Key
+            capabilities they leverage:
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Capability</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Token tracking</td>
+                  <td>4 types (input, output, cache_read, cache_write) + 4 compaction baselines per model per session</td>
+                </tr>
+                <tr>
+                  <td>Cost calculation</td>
+                  <td><code>(tokens / 1M) × rate_per_mtok</code> for each type; longest pattern match wins</td>
+                </tr>
+                <tr>
+                  <td>Session metadata</td>
+                  <td><code>thinking_blocks</code>, <code>turn_count</code>, <code>total_turn_duration_ms</code>, <code>usage_extras</code> (service_tier, speed, inference_geo)</td>
+                </tr>
+                <tr>
+                  <td>Event types</td>
+                  <td>PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, Notification, Compaction, APIError, TurnDuration</td>
+                </tr>
+                <tr>
+                  <td>Workflow intelligence</td>
+                  <td>11 datasets: stats, orchestration (DAG), toolFlow, effectiveness, patterns, modelDelegation, errorPropagation, concurrency, complexity, compaction, cooccurrence</td>
+                </tr>
+                <tr>
+                  <td>Agent hierarchy</td>
+                  <td>Recursive parent/child tree with subagent_type, depth tracking via recursive CTE</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>
+            📖 Full documentation: <a href="docs/plugins.md"><code>docs/plugins.md</code></a>
+          </p>
         </section>
 
         <!-- ─── Statusline Utility ────────────────────────────────────────── -->
