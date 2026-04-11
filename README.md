@@ -55,6 +55,7 @@ A professional dashboard to track and visualize your Claude Code agent sessions,
 - [How It Works](#how-it-works)
 - [Configuration](#configuration)
 - [npm Scripts](#npm-scripts)
+- [Plugin Marketplace](#plugin-marketplace)
 - [Agent Extensions](#agent-extensions)
 - [MCP Integration](#mcp-integration)
 - [API Reference](#api-reference)
@@ -156,6 +157,7 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 | **Responsive Design**              | Mobile-friendly layouts with stacking grids, scrollable tables, and collapsible sidebar                                                                                                                                                                                      |
 | **Seed Data**                      | Built-in seed script for demos and development                                                                                                                                                                                                                               |
 | **Statusline**                     | Color-coded CLI statusline showing model, context usage, git branch, tokens                                                                                                                                                                                                  |
+| **Plugin Marketplace**             | Official Claude Code plugin marketplace with 5 plugins (ccam-analytics, ccam-productivity, ccam-devtools, ccam-insights, ccam-dashboard). 18 skills, 4 agents, 3 CLI tools, 2 hook configs. All grounded in actual data model — token baselines, pricing engine, workflow intelligence (11 datasets), session metadata. Install via `claude plugin marketplace add` |
 
 ---
 
@@ -842,6 +844,47 @@ erDiagram
 
 ---
 
+## Plugin Marketplace
+
+Extend Claude Code with official Agent Monitor plugins — analytics, productivity tools, developer utilities, AI-powered insights, and dashboard connectivity.
+
+### Add the marketplace
+
+```bash
+claude plugin marketplace add hoangsonww/Claude-Code-Agent-Monitor
+```
+
+### Available plugins
+
+| Plugin | Install command | Skills |
+|--------|----------------|--------|
+| **ccam-analytics** | `claude plugin install ccam-analytics@hoangsonww-claude-code-agent-monitor` | `session-report`, `cost-breakdown`, `usage-trends`, `productivity-score` |
+| **ccam-productivity** | `claude plugin install ccam-productivity@hoangsonww-claude-code-agent-monitor` | `daily-standup`, `weekly-report`, `sprint-summary`, `workflow-optimizer` |
+| **ccam-devtools** | `claude plugin install ccam-devtools@hoangsonww-claude-code-agent-monitor` | `session-debug`, `hook-diagnostics`, `data-export`, `health-check` |
+| **ccam-insights** | `claude plugin install ccam-insights@hoangsonww-claude-code-agent-monitor` | `pattern-detect`, `anomaly-alert`, `optimization-suggest`, `session-compare` |
+| **ccam-dashboard** | `claude plugin install ccam-dashboard@hoangsonww-claude-code-agent-monitor` | `dashboard-status`, `quick-stats` + MCP server |
+
+### CLI tools included
+
+- `ccam-stats` — Terminal dashboard (sessions, costs, tokens with compaction baselines)
+- `ccam-doctor` — System diagnostics (API, database, hooks, data freshness)
+- `ccam-export` — Data export (JSON, CSV) for sessions, events, analytics, costs
+
+### Example usage
+
+```bash
+# In Claude Code, after installing a plugin:
+/ccam-analytics:session-report latest
+/ccam-analytics:cost-breakdown this week
+/ccam-productivity:daily-standup today
+/ccam-insights:pattern-detect tools
+/ccam-dashboard:quick-stats
+```
+
+📖 Full documentation: [docs/plugins.md](docs/plugins.md)
+
+---
+
 ## Statusline
 
 A standalone CLI statusline utility for Claude Code that displays model name, user, working directory, git branch, context window usage bar, and token counts -- all color-coded with ANSI escape sequences.
@@ -1074,6 +1117,21 @@ agent-dashboard/
 |   +-- rules/                  # Path-scoped Claude rules
 |   +-- skills/                 # Claude reusable project skills
 |   +-- agents/                 # Claude custom subagents
+|-- .claude-plugin/
+|   +-- marketplace.json        # Plugin marketplace manifest (5 plugins)
+|-- plugins/
+|   |-- ccam-analytics/         # Analytics: session reports, cost breakdown, usage trends, productivity score
+|   |   |-- .claude-plugin/plugin.json
+|   |   |-- skills/ (4)         # session-report, cost-breakdown, usage-trends, productivity-score
+|   |   |-- agents/             # analytics-advisor (Sonnet model)
+|   |   |-- hooks/hooks.json    # Stop + SubagentStop event logging
+|   |   +-- bin/ccam-stats      # Terminal dashboard CLI
+|   |-- ccam-productivity/      # Productivity: standups, reports, sprints, workflow optimizer
+|   |-- ccam-devtools/          # DevTools: debug, diagnostics, export, health checks
+|   |   +-- bin/                # ccam-doctor + ccam-export CLIs
+|   |-- ccam-insights/          # Insights: patterns, anomalies, optimization, comparison
+|   +-- ccam-dashboard/         # Dashboard connector: status, quick stats, MCP integration
+|       +-- .mcp.json           # MCP server configuration
 |-- server/
 |   |-- index.js                 # Express app, HTTP server, static serving
 |   |-- db.js                    # SQLite schema, migrations, prepared statements

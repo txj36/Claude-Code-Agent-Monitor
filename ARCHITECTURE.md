@@ -56,6 +56,7 @@ Architectural overview and technical reference for the Agent Dashboard system, c
 - [WebSocket Protocol](#websocket-protocol)
 - [Hook Integration](#hook-integration)
 - [Agent Extension Layer](#agent-extension-layer)
+- [Plugin Marketplace](#plugin-marketplace)
 - [MCP Integration](#mcp-integration)
 - [State Management](#state-management)
 - [Browser Notification System](#browser-notification-system)
@@ -93,6 +94,7 @@ C4Context
 - Never block Claude Code -- hooks fail silently with timeouts
 - Instant feedback -- WebSocket push, no polling
 - Portable -- SQLite, no external services, runs on any OS with Node.js 18+
+- Extensible -- plugin marketplace with 5 plugins (18 skills, 4 agents, 3 CLI tools)
 
 ---
 
@@ -112,6 +114,17 @@ graph TB
         CC --> H0 & H1 & H2 & H3 & H4 & H5 & H6
     end
 
+    subgraph "Plugin Layer"
+        direction TB
+        PM["Plugin Marketplace<br/>(5 plugins, 18 skills)"]
+        PA["ccam-analytics"]
+        PP["ccam-productivity"]
+        PD["ccam-devtools"]
+        PI["ccam-insights"]
+        PC["ccam-dashboard"]
+        PM --> PA & PP & PD & PI & PC
+    end
+
     subgraph "Hook Layer"
         HH["hook-handler.js<br/>(stdin → HTTP)"]
         H0 & H1 & H2 & H3 & H4 & H5 & H6 -->|stdin JSON| HH
@@ -125,12 +138,15 @@ graph TB
         AR[Agent Router]
         ER[Event Router]
         STR[Stats Router]
+        ANR[Analytics Router]
+        WFR[Workflows Router]
+        PR[Pricing Router]
         DB[(SQLite<br/>WAL mode)]
         WSS[WebSocket Server]
 
-        EX --> HR & SR & AR & ER & STR
+        EX --> HR & SR & AR & ER & STR & ANR & WFR & PR
         HR -->|transaction| DB
-        SR & AR & ER & STR --> DB
+        SR & AR & ER & STR & ANR & WFR & PR --> DB
         HR -->|broadcast| WSS
         SR & AR -->|broadcast| WSS
     end
@@ -141,7 +157,7 @@ graph TB
         APP[React App]
         WS_CLIENT[WebSocket Client]
         EB[Event Bus]
-        PAGES[Pages:<br/>Dashboard / Kanban /<br/>Sessions / Activity /<br/>Workflows]
+        PAGES[Pages:<br/>Dashboard / Kanban /<br/>Sessions / Activity /<br/>Analytics / Workflows]
 
         VITE --> APP
         APP --> WS_CLIENT
@@ -152,11 +168,13 @@ graph TB
 
     HH -->|"POST /api/hooks/event"| HR
     WSS -->|push messages| WS_CLIENT
+    PA & PP & PD & PI & PC -->|"curl API"| EX
 
     style CC fill:#6366f1,stroke:#818cf8,color:#fff
     style DB fill:#003B57,stroke:#005f8a,color:#fff
     style WSS fill:#10b981,stroke:#34d399,color:#fff
     style EB fill:#f59e0b,stroke:#fbbf24,color:#000
+    style PM fill:#8b5cf6,stroke:#a78bfa,color:#fff
 ```
 
 ---
@@ -747,9 +765,11 @@ flowchart TD
 
 ## Agent Extension Layer
 
-The repository includes a dual extension strategy:
+The repository includes a triple extension strategy:
 
 - Claude Code-native extensions (`CLAUDE.md`, `.claude/rules`, `.claude/skills`)
+- Codex-native extensions (`AGENTS.md`, `.codex/rules`, `.codex/agents`, `.codex/skills`)
+- Plugin marketplace (`plugins/`, `.claude-plugin/marketplace.json`) — 5 plugins with 18 skills, 4 agents, 3 CLI tools
 - Codex-native extensions (`AGENTS.md`, `.codex/rules`, `.codex/agents`, `.codex/skills`)
 
 ```mermaid
@@ -760,11 +780,14 @@ graph TD
     CLAUDE --> C_MEM["CLAUDE.md"]
     CLAUDE --> C_RULES[".claude/rules/*"]
     CLAUDE --> C_SKILLS[".claude/skills/*"]
+    CLAUDE --> C_PLUGINS["plugins/<br/>5 plugins, 18 skills"]
 
     CODEX --> X_MEM["AGENTS.md"]
     CODEX --> X_RULES[".codex/rules/*.rules"]
     CODEX --> X_AGENTS[".codex/agents/*.toml"]
     CODEX --> X_SKILLS[".codex/skills/*"]
+
+    style C_PLUGINS fill:#8b5cf6,stroke:#a78bfa,color:#fff
 ```
 
 ### Claude Code extension scope
@@ -780,6 +803,12 @@ graph TD
   - backend reviewer
   - frontend reviewer
   - MCP reviewer
+- `plugins/` provides distributable plugin marketplace (see [Plugin Marketplace](#plugin-marketplace)):
+  - ccam-analytics (session reports, cost analysis, usage trends, productivity scoring)
+  - ccam-productivity (standups, weekly reports, sprint summaries, workflow optimization)
+  - ccam-devtools (session debugging, hook diagnostics, data export, health checks)
+  - ccam-insights (pattern detection, anomaly alerting, optimization, session comparison)
+  - ccam-dashboard (status checks, quick stats, MCP integration)
 
 ### Codex extension scope
 
@@ -787,6 +816,120 @@ graph TD
 - `.codex/rules/default.rules` controls external execution decisions.
 - `.codex/agents/` provides custom subagent templates.
 - `.codex/skills/` provides reusable task workflows.
+
+---
+
+## Plugin Marketplace
+
+The repository includes an official Claude Code plugin marketplace with five production-ready plugins. These extend Claude Code itself (not just the dashboard) with skills, agents, hooks, CLI tools, and MCP integration — all deeply grounded in the actual dashboard data model.
+
+### Marketplace Architecture
+
+```mermaid
+graph TD
+    subgraph Marketplace[".claude-plugin/marketplace.json"]
+        M["Marketplace Manifest"]
+    end
+
+    subgraph Plugins["plugins/"]
+        A["ccam-analytics<br/>4 skills, 1 agent, 1 CLI"]
+        P["ccam-productivity<br/>4 skills, 1 agent"]
+        D["ccam-devtools<br/>4 skills, 1 agent, 2 CLIs"]
+        I["ccam-insights<br/>4 skills, 1 agent"]
+        C["ccam-dashboard<br/>2 skills, MCP config"]
+    end
+
+    subgraph API["Dashboard API (port 4820)"]
+        STATS["/api/stats"]
+        ANALYTICS["/api/analytics"]
+        PRICING["/api/pricing/cost"]
+        WORKFLOWS["/api/workflows/:id"]
+        SESSIONS["/api/sessions"]
+    end
+
+    M --> A & P & D & I & C
+    A & P & I --> ANALYTICS & PRICING & WORKFLOWS
+    D --> STATS & SESSIONS
+    C --> STATS & ANALYTICS
+
+    style M fill:#6366f1,stroke:#818cf8,color:#fff
+    style A fill:#10b981,stroke:#34d399,color:#fff
+    style P fill:#f59e0b,stroke:#fbbf24,color:#000
+    style D fill:#ef4444,stroke:#f87171,color:#fff
+    style I fill:#8b5cf6,stroke:#a78bfa,color:#fff
+    style C fill:#06b6d4,stroke:#22d3ee,color:#000
+```
+
+### Plugin Structure
+
+Each plugin follows the official Claude Code plugin specification:
+
+```
+plugins/ccam-{name}/
+├── .claude-plugin/
+│   └── plugin.json              # Manifest: name, version, description, author
+├── skills/
+│   └── {skill-name}/
+│       └── SKILL.md             # Skill definition with $ARGUMENTS placeholder
+├── agents/
+│   └── {agent-name}.md          # Agent: model, tools, instructions
+├── hooks/
+│   └── hooks.json               # Event hooks (fail-safe, non-blocking)
+├── bin/
+│   └── {cli-tool}               # Executable scripts (added to PATH)
+├── .mcp.json                    # MCP server configuration (optional)
+└── settings.json                # Plugin settings (optional)
+```
+
+Skills are namespaced: `/ccam-analytics:session-report`, `/ccam-productivity:daily-standup`, etc.
+
+### Plugin Catalog
+
+| Plugin | Skills | Agent | CLI Tools | Hooks |
+|--------|--------|-------|-----------|-------|
+| **ccam-analytics** | `session-report`, `cost-breakdown`, `usage-trends`, `productivity-score` | `analytics-advisor` | `ccam-stats` | Stop, SubagentStop |
+| **ccam-productivity** | `daily-standup`, `weekly-report`, `sprint-summary`, `workflow-optimizer` | `productivity-coach` | — | SessionStart, SessionEnd |
+| **ccam-devtools** | `session-debug`, `hook-diagnostics`, `data-export`, `health-check` | `issue-triager` | `ccam-doctor`, `ccam-export` | — |
+| **ccam-insights** | `pattern-detect`, `anomaly-alert`, `optimization-suggest`, `session-compare` | `insights-advisor` | — | — |
+| **ccam-dashboard** | `dashboard-status`, `quick-stats` | — | — | — |
+
+**Totals**: 18 skills, 4 agents, 3 CLI tools, 2 hook configurations, 1 MCP config.
+
+### Data Model Grounding
+
+Every skill and agent references the actual dashboard API response shapes:
+
+| Data Source | Key Fields Used by Plugins |
+|-------------|---------------------------|
+| Token tracking | `input_tokens`, `output_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens` + 4 `baseline_*` columns (preserve pre-compaction data) |
+| Cost engine | `(tokens / 1M) × rate_per_mtok` for each type; longest `model_pattern` match wins; pre-seeded Opus/Sonnet/Haiku rates |
+| Session metadata | `thinking_blocks`, `turn_count`, `total_turn_duration_ms`, `usage_extras` (`{ service_tiers[], speeds[], inference_geos[] }`) |
+| Event types | `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `SessionStart`, `SessionEnd`, `Notification`, `Compaction`, `APIError`, `TurnDuration` |
+| Workflow intelligence | 11 datasets per session: `stats`, `orchestration` (DAG), `toolFlow` (transitions), `effectiveness`, `patterns`, `modelDelegation`, `errorPropagation` (by depth), `concurrency` (lanes), `complexity` (score), `compaction` (impact), `cooccurrence` (agent pairs) |
+| Agent hierarchy | Recursive CTE with `parent_agent_id`, `subagent_type`, depth tracking |
+
+### Key Derived Metrics
+
+Plugins compute these from raw API data:
+
+- **Cache efficiency**: `cache_read / (cache_read + input)` — trending up = improving prompt reuse
+- **Compaction pressure**: `sum(baseline_*) / sum(effective_tokens)` — high = frequent context overflow
+- **Tool success rate**: `PostToolUse count / PreToolUse count` — should be ~1.0; gap = tool failures
+- **Turn velocity**: `turn_count / (total_turn_duration_ms / 1000)` — turns per second
+- **Cost per completed session**: `total_cost / completed_sessions`
+
+### Installation
+
+```bash
+# Marketplace install
+claude plugin marketplace add hoangsonww/Claude-Code-Agent-Monitor
+claude plugin install ccam-analytics@hoangsonww-claude-code-agent-monitor
+
+# Local development testing
+claude --plugin-dir plugins/ccam-analytics
+```
+
+Full documentation: [`docs/plugins.md`](docs/plugins.md)
 
 ---
 
