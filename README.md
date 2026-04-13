@@ -4,7 +4,8 @@
 
 A professional dashboard to track and visualize your Claude Code agent sessions, tool usage, and subagent orchestration in real-time. Built with Node.js, Express, React, and SQLite, it integrates directly with Claude Code via its native hook system for seamless session tracking and analytics.
 
-![Claude Code](https://img.shields.io/badge/Claude_Code-1.0-orange?style=flat-square&logo=claude&logoColor=white)
+![Claude Code](https://img.shields.io/badge/Claude_Code-orange?style=flat-square&logo=claude&logoColor=white)
+![Claude Code Plugins](https://img.shields.io/badge/Claude_Code-Plugins_&_Skills-orange?style=flat-square&logo=anthropic&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.21-000000?style=flat-square&logo=express&logoColor=white)
 ![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=white)
@@ -87,6 +88,8 @@ graph LR
     style C fill:#1a1a28,stroke:#2a2a3d,color:#e4e4ed
     style D fill:#10b981,stroke:#34d399,color:#fff
 ```
+
+In addition to the real-time monitoring dashboard, it also includes a local MCP server implementation in `mcp/` that exposes a catalog of tools for introspecting and managing the dashboard itself, making it easy to integrate dashboard operations directly into your Claude Code workflows. There is also an agent extension layer, which provides Claude Code plugins, skills, and subagents for dashboard interaction, analytics, and workflow intelligence.
 
 ### User Interface
 
