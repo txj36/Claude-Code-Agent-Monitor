@@ -1,18 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ErrorPropagationData } from "../../lib/types";
-
-// ── Constants ─────────────────────────────────────────────────────────────────
-
-const DEPTH_LABELS: Record<number, string> = {
-  0: "Session / Main",
-  1: "Direct Subagent",
-  2: "Nested (depth 2)",
-  3: "Deep (depth 3+)",
-};
-
-function depthLabel(depth: number): string {
-  return DEPTH_LABELS[depth] ?? `Depth ${depth}`;
-}
 
 const DEPTH_COLORS = ["#ef4444", "#f97316", "#eab308", "#a855f7"];
 
@@ -23,7 +11,18 @@ export interface ErrorPropagationMapProps {
 }
 
 export function ErrorPropagationMap({ data }: ErrorPropagationMapProps) {
+  const { t } = useTranslation("workflows");
   const [hoveredDepth, setHoveredDepth] = useState<number | null>(null);
+
+  function depthLabel(depth: number): string {
+    const keys = [
+      t("errorPropagation.depthLabels.sessionMain"),
+      t("errorPropagation.depthLabels.directSubagent"),
+      t("errorPropagation.depthLabels.nested"),
+      t("errorPropagation.depthLabels.deep"),
+    ];
+    return keys[depth] ?? `${t("common:depth", { defaultValue: "Depth" })} ${depth}`;
+  }
 
   const hasErrors =
     data.byDepth.some((d) => d.count > 0) ||
@@ -49,8 +48,8 @@ export function ErrorPropagationMap({ data }: ErrorPropagationMapProps) {
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         </div>
-        <span className="text-sm text-emerald-400 font-medium">No errors recorded</span>
-        <span className="text-xs text-gray-600">All sessions completed successfully</span>
+        <span className="text-sm text-emerald-400 font-medium">{t("errorPropagation.noErrors")}</span>
+        <span className="text-xs text-gray-600">{t("errorPropagation.allSuccess")}</span>
       </div>
     );
   }
@@ -72,12 +71,12 @@ export function ErrorPropagationMap({ data }: ErrorPropagationMapProps) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-red-300">
-            {data.sessionsWithErrors} of {data.totalSessions} sessions had errors
+            {data.sessionsWithErrors} of {data.totalSessions}{t("errorPropagation.sessionsHadErrors")}
           </p>
           <p className="text-[11px] text-gray-500 mt-0.5">
             {totalErrors > 0
-              ? `${totalErrors} agent-level error${totalErrors !== 1 ? "s" : ""} across hierarchy`
-              : "Session-level errors only"}
+              ? `${totalErrors}${t("errorPropagation.agentErrors")}`
+              : t("errorPropagation.sessionErrorsOnly")}
           </p>
         </div>
       </div>
@@ -86,7 +85,7 @@ export function ErrorPropagationMap({ data }: ErrorPropagationMapProps) {
       {hasDepthData && (
         <div>
           <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-2.5">
-            Errors by hierarchy depth
+            {t("errorPropagation.errorsByDepth")}
           </p>
           <div className="flex flex-col gap-1.5">
             {data.byDepth
@@ -132,7 +131,7 @@ export function ErrorPropagationMap({ data }: ErrorPropagationMapProps) {
       {topTypes.length > 0 && (
         <div>
           <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-2.5">
-            Error-prone agent types
+            {t("errorPropagation.errorProneTypes")}
           </p>
           <div className="flex flex-col gap-1">
             {topTypes.map((t, i) => {
@@ -170,7 +169,7 @@ export function ErrorPropagationMap({ data }: ErrorPropagationMapProps) {
       {data.eventErrors && data.eventErrors.length > 0 && (
         <div>
           <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-2.5">
-            API &amp; session errors
+            {t("errorPropagation.apiSessionErrors")}
           </p>
           <div className="flex flex-col gap-1">
             {data.eventErrors.map((e) => (

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Activity, Pause, Play, RefreshCw } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
@@ -12,6 +13,7 @@ const PAGE_SIZE = 10;
 
 export function ActivityFeed() {
   const navigate = useNavigate();
+  const { t } = useTranslation("activity");
   const [events, setEvents] = useState<DashboardEvent[]>([]);
   const [paused, setPaused] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -50,8 +52,6 @@ export function ActivityFeed() {
   }, []);
 
   function resume() {
-    // Set ref synchronously first so any events arriving between now and
-    // React's re-render go directly to state instead of the cleared buffer.
     pausedRef.current = false;
     const buffered = bufferRef.current;
     bufferRef.current = [];
@@ -83,11 +83,11 @@ export function ActivityFeed() {
             <Activity className="w-4.5 h-4.5 text-accent" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-100">Activity Feed</h1>
+            <h1 className="text-lg font-semibold text-gray-100">{t("title")}</h1>
             <p className="text-xs text-gray-500">
-              Real-time stream of all agent events
+              {t("subtitle")}
               {paused && (
-                <span className="ml-2 text-yellow-400">(paused — {bufferCount} buffered)</span>
+                <span className="ml-2 text-yellow-400">{t("paused", { count: bufferCount })}</span>
               )}
             </p>
           </div>
@@ -96,11 +96,11 @@ export function ActivityFeed() {
           <button onClick={() => (paused ? resume() : setPaused(true))} className="btn-ghost">
             {paused ? (
               <>
-                <Play className="w-4 h-4" /> Resume
+                <Play className="w-4 h-4" /> {t("resume")}
               </>
             ) : (
               <>
-                <Pause className="w-4 h-4" /> Pause
+                <Pause className="w-4 h-4" /> {t("pause")}
               </>
             )}
           </button>
@@ -113,8 +113,8 @@ export function ActivityFeed() {
       {!loading && events.length === 0 ? (
         <EmptyState
           icon={Activity}
-          title="No activity yet"
-          description="Events will stream here in real-time as Claude Code agents work."
+          title={t("noActivity")}
+          description={t("noActivityDesc")}
         />
       ) : (
         <>
@@ -154,8 +154,11 @@ export function ActivityFeed() {
           {events.length > PAGE_SIZE && (
             <div className="flex items-center justify-between mt-4 px-1">
               <span className="text-xs text-gray-500">
-                Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, events.length)} of{" "}
-                {events.length}
+                {t("common:pagination.showing", {
+                  from: page * PAGE_SIZE + 1,
+                  to: Math.min((page + 1) * PAGE_SIZE, events.length),
+                  total: events.length,
+                })}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -163,7 +166,7 @@ export function ActivityFeed() {
                   disabled={page === 0}
                   className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Previous
+                  {t("common:pagination.previous")}
                 </button>
                 <span className="px-3 py-1.5 text-xs text-gray-500">
                   {page + 1} / {Math.ceil(events.length / PAGE_SIZE)}
@@ -175,7 +178,7 @@ export function ActivityFeed() {
                   disabled={page >= Math.ceil(events.length / PAGE_SIZE) - 1}
                   className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Next
+                  {t("common:pagination.next")}
                 </button>
               </div>
             </div>

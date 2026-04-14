@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import type { SessionComplexityItem } from "../../lib/types";
 
@@ -54,6 +55,7 @@ interface TooltipState {
 }
 
 function Tooltip({ state }: { state: TooltipState }) {
+  const { t } = useTranslation("workflows");
   const nearRight = state.x > window.innerWidth - 220;
 
   return (
@@ -69,11 +71,11 @@ function Tooltip({ state }: { state: TooltipState }) {
         {state.item.name ?? state.item.id.slice(0, 12)}
       </p>
       <div className="flex flex-col gap-0.5 text-gray-400">
-        <span>Duration: {formatDurationSec(state.item.duration)}</span>
-        <span>Agents: {state.item.agentCount}</span>
-        <span>Subagents: {state.item.subagentCount}</span>
-        <span>Tokens: {fmtTokens(state.item.totalTokens)}</span>
-        {state.item.model && <span>Model: {state.item.model}</span>}
+        <span>{t("complexity.tooltip.duration")} {formatDurationSec(state.item.duration)}</span>
+        <span>{t("complexity.tooltip.agents")} {state.item.agentCount}</span>
+        <span>{t("complexity.tooltip.subagents")} {state.item.subagentCount}</span>
+        <span>{t("complexity.tooltip.tokens")} {fmtTokens(state.item.totalTokens)}</span>
+        {state.item.model && <span>{t("complexity.tooltip.model")} {state.item.model}</span>}
       </div>
       <div className="mt-1 pt-1 border-t border-[#2a2a4a]">
         <span className="font-medium" style={{ color: statusColor(state.item.status) }}>
@@ -107,6 +109,7 @@ function Legend() {
 // ── Empty state ───────────────────────────────────────────────────────────────
 
 function EmptyState() {
+  const { t } = useTranslation("workflows");
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-10 h-10 rounded-xl bg-surface-4 flex items-center justify-center mb-3">
@@ -122,9 +125,9 @@ function EmptyState() {
           <circle cx="14" cy="17" r="4" />
         </svg>
       </div>
-      <p className="text-sm font-medium text-gray-400">No session complexity data</p>
+      <p className="text-sm font-medium text-gray-400">{t("complexity.noData")}</p>
       <p className="text-xs text-gray-600 mt-1">
-        Sessions will appear here once they complete with agent activity.
+        {t("complexity.noDataDesc")}
       </p>
     </div>
   );
@@ -138,6 +141,7 @@ export interface SessionComplexityScatterProps {
 }
 
 export function SessionComplexityScatter({ data, onSessionClick }: SessionComplexityScatterProps) {
+  const { t } = useTranslation("workflows");
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -243,7 +247,7 @@ export function SessionComplexityScatter({ data, onSessionClick }: SessionComple
       .attr("text-anchor", "middle")
       .attr("fill", "#6b7280")
       .attr("font-size", "11")
-      .text("Duration");
+      .text(t("complexity.duration"));
 
     // Y axis
     g.append("g")
@@ -262,7 +266,7 @@ export function SessionComplexityScatter({ data, onSessionClick }: SessionComple
       .attr("text-anchor", "middle")
       .attr("fill", "#6b7280")
       .attr("font-size", "11")
-      .text("Agent Count");
+      .text(t("complexity.agentCount"));
 
     // Bubbles — sort largest to back so small ones are clickable
     const sorted = [...data].sort((a, b) => b.totalTokens - a.totalTokens);
@@ -297,7 +301,7 @@ export function SessionComplexityScatter({ data, onSessionClick }: SessionComple
       .on("click", (_event: MouseEvent, d) => {
         onSessionClick?.(d.id);
       });
-  }, [data, width, height, onSessionClick]);
+  }, [data, width, height, onSessionClick, t]);
 
   if (data.length === 0) return <EmptyState />;
 

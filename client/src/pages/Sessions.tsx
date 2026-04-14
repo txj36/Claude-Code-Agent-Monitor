@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { FolderOpen, Search, ChevronRight, RefreshCw } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
@@ -8,23 +9,24 @@ import { EmptyState } from "../components/EmptyState";
 import { formatDateTime, formatDuration, truncate, fmtCost } from "../lib/format";
 import type { Session, SessionStatus, DashboardEvent } from "../lib/types";
 
-const FILTER_OPTIONS: Array<{ label: string; value: string }> = [
-  { label: "All", value: "" },
-  { label: "Active", value: "active" },
-  { label: "Completed", value: "completed" },
-  { label: "Error", value: "error" },
-  { label: "Abandoned", value: "abandoned" },
-];
-
 const PAGE_SIZE = 10;
 
 export function Sessions() {
   const navigate = useNavigate();
+  const { t } = useTranslation("sessions");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+
+  const FILTER_OPTIONS: Array<{ label: string; value: string }> = [
+    { label: t("filterAll"), value: "" },
+    { label: t("filterActive"), value: "active" },
+    { label: t("filterCompleted"), value: "completed" },
+    { label: t("filterError"), value: "error" },
+    { label: t("filterAbandoned"), value: "abandoned" },
+  ];
 
   const load = useCallback(async () => {
     try {
@@ -46,8 +48,6 @@ export function Sessions() {
       if (msg.type === "session_created" || msg.type === "session_updated") {
         load();
       }
-      // Reload on turn boundaries — token usage (and thus cost) updates on each hook event
-      // but only Stop/SessionEnd represent meaningful cost changes worth refreshing for.
       if (msg.type === "new_event") {
         const ev = msg.data as DashboardEvent;
         if (ev.event_type === "Stop" || ev.event_type === "SessionEnd") {
@@ -82,15 +82,15 @@ export function Sessions() {
             <FolderOpen className="w-4.5 h-4.5 text-accent" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-100">Sessions</h1>
+            <h1 className="text-lg font-semibold text-gray-100">{t("title")}</h1>
             <p className="text-xs text-gray-500">
-              {sessions.length}
-              {filter ? ` ${filter}` : ""} session{sessions.length !== 1 ? "s" : ""} recorded
+              {t("sessionCount", { count: sessions.length })}
+              {filter ? ` ${filter}` : ""}
             </p>
           </div>
         </div>
         <button onClick={load} className="btn-ghost flex-shrink-0">
-          <RefreshCw className="w-4 h-4" /> Refresh
+          <RefreshCw className="w-4 h-4" /> {t("common:refresh")}
         </button>
       </div>
 
@@ -100,7 +100,7 @@ export function Sessions() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
-            placeholder="Search sessions..."
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input w-full pl-10"
@@ -126,11 +126,11 @@ export function Sessions() {
       {!loading && filtered.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
-          title="No sessions found"
+          title={t("noSessions")}
           description={
             search || filter
-              ? "Try adjusting your search or filters."
-              : "Start a Claude Code session with hooks installed to begin tracking."
+              ? t("noSessionsDesc")
+              : t("noSessionsHint")
           }
         />
       ) : (
@@ -140,25 +140,25 @@ export function Sessions() {
               <thead>
                 <tr className="border-b border-border text-left">
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Session
+                    {t("tableSession")}
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t("tableStatus")}
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Last Active
+                    {t("tableLastActive")}
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Duration
+                    {t("tableDuration")}
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Agents
+                    {t("tableAgents")}
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Cost
+                    {t("tableCost")}
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Directory
+                    {t("tableDirectory")}
                   </th>
                   <th className="w-10"></th>
                 </tr>
@@ -173,7 +173,7 @@ export function Sessions() {
                     <td className="px-5 py-4">
                       <div>
                         <p className="text-sm font-medium text-gray-200">
-                          {session.name || `Session ${session.id.slice(0, 8)}`}
+                          {session.name || `${t("defaultName")}${session.id.slice(0, 8)}`}
                         </p>
                         <p className="text-[11px] text-gray-600 font-mono">
                           {session.id.slice(0, 12)}
@@ -189,7 +189,7 @@ export function Sessions() {
                     <td className="px-5 py-4 text-sm text-gray-400 font-mono">
                       {session.ended_at
                         ? formatDuration(session.started_at, session.ended_at)
-                        : "running"}
+                        : t("common:running")}
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-400">
                       {session.agent_count ?? "-"}
@@ -211,8 +211,11 @@ export function Sessions() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 px-1">
               <span className="text-xs text-gray-500">
-                Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)}{" "}
-                of {filtered.length}
+                {t("common:pagination.showing", {
+                  from: page * PAGE_SIZE + 1,
+                  to: Math.min((page + 1) * PAGE_SIZE, filtered.length),
+                  total: filtered.length,
+                })}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -220,7 +223,7 @@ export function Sessions() {
                   disabled={page === 0}
                   className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Previous
+                  {t("common:pagination.previous")}
                 </button>
                 <span className="px-3 py-1.5 text-xs text-gray-500">
                   {page + 1} / {totalPages}
@@ -230,7 +233,7 @@ export function Sessions() {
                   disabled={page >= totalPages - 1}
                   className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Next
+                  {t("common:pagination.next")}
                 </button>
               </div>
             </div>

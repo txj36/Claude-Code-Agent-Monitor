@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import type { ModelDelegationData } from "../../lib/types";
 
@@ -87,7 +88,8 @@ function renderFlow(
   svg: SVGSVGElement,
   mainNodes: NodeDatum[],
   subNodes: NodeDatum[],
-  edges: EdgeDatum[]
+  edges: EdgeDatum[],
+  t: (key: string) => string
 ): void {
   const allNodes = [...mainNodes, ...subNodes];
 
@@ -127,7 +129,7 @@ function renderFlow(
     .attr("font-size", 11)
     .attr("font-family", "Inter, sans-serif")
     .attr("letter-spacing", "0.08em")
-    .text("MAIN MODELS");
+    .text(t("modelDelegation.mainModels"));
 
   g.append("text")
     .attr("x", PADDING.left + NODE_W + COL_GAP + NODE_W / 2)
@@ -137,7 +139,7 @@ function renderFlow(
     .attr("font-size", 11)
     .attr("font-family", "Inter, sans-serif")
     .attr("letter-spacing", "0.08em")
-    .text("SUBAGENT MODELS");
+    .text(t("modelDelegation.subagentModels"));
 
   // Build lookup for node positions
   const nodeMap = new Map<string, NodeDatum>(allNodes.map((n) => [n.id, n]));
@@ -249,6 +251,7 @@ export interface ModelDelegationFlowProps {
 }
 
 export function ModelDelegationFlow({ data }: ModelDelegationFlowProps) {
+  const { t } = useTranslation("workflows");
   const svgRef = useRef<SVGSVGElement>(null);
 
   const hasData = data.mainModels.length > 0 || data.subagentModels.length > 0;
@@ -293,8 +296,8 @@ export function ModelDelegationFlow({ data }: ModelDelegationFlowProps) {
       });
     });
 
-    renderFlow(svgRef.current, mainNodes, subNodes, edges);
-  }, [data, hasData]);
+    renderFlow(svgRef.current, mainNodes, subNodes, edges, t);
+  }, [data, hasData, t]);
 
   if (!hasData) {
     return (
@@ -311,7 +314,7 @@ export function ModelDelegationFlow({ data }: ModelDelegationFlowProps) {
           <circle cx="12" cy="12" r="10" />
           <path d="M12 8v4M12 16h.01" />
         </svg>
-        <span className="text-sm">No model delegation data available</span>
+        <span className="text-sm">{t("modelDelegation.noData")}</span>
       </div>
     );
   }

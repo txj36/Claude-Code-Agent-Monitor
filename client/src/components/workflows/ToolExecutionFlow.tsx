@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import type { SankeyGraph, SankeyNode, SankeyLink } from "d3-sankey";
+import { useTranslation } from "react-i18next";
 import type { ToolFlowData } from "../../lib/types";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -122,6 +123,7 @@ export function ToolExecutionFlow({
   data,
   filterAgentType: _filterAgentType,
 }: ToolExecutionFlowProps) {
+  const { t } = useTranslation("workflows");
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -351,7 +353,7 @@ export function ToolExecutionFlow({
     <div className="relative" ref={containerRef}>
       {isEmpty ? (
         <div className="flex items-center justify-center" style={{ height: dimensions.height }}>
-          <span className="text-sm text-gray-500">No tool flow data</span>
+          <span className="text-sm text-gray-500">{t("toolFlow.noData")}</span>
         </div>
       ) : (
         <>

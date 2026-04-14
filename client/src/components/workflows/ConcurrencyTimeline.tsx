@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ConcurrencyData, ConcurrencyLane } from "../../lib/types";
 
 // ── Color palette ─────────────────────────────────────────────────────────────
@@ -75,6 +77,7 @@ function LaneRow({ lane, color, maxCount }: LaneRowProps) {
 // ── Empty state ───────────────────────────────────────────────────────────────
 
 function EmptyState() {
+  const { t } = useTranslation("workflows");
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-10 h-10 rounded-xl bg-surface-4 flex items-center justify-center mb-3">
@@ -90,9 +93,9 @@ function EmptyState() {
           <rect x="3" y="16" width="15" height="4" rx="1" />
         </svg>
       </div>
-      <p className="text-sm font-medium text-gray-400">No concurrency data</p>
+      <p className="text-sm font-medium text-gray-400">{t("concurrency.noData")}</p>
       <p className="text-xs text-gray-600 mt-1">
-        Concurrency data appears once sessions with subagents have been recorded.
+        {t("concurrency.noDataDesc")}
       </p>
     </div>
   );
@@ -105,6 +108,7 @@ export interface ConcurrencyTimelineProps {
 }
 
 export function ConcurrencyTimeline({ data }: ConcurrencyTimelineProps) {
+  const { t } = useTranslation("workflows");
   const lanes = data.aggregateLanes;
 
   if (lanes.length === 0) {
@@ -132,11 +136,11 @@ export function ConcurrencyTimeline({ data }: ConcurrencyTimelineProps) {
       <div className="flex items-center gap-3 mb-2">
         <div className="flex-shrink-0 w-[140px]" />
         <div className="flex-1 flex items-center justify-between">
-          <span className="text-[10px] text-gray-600 uppercase tracking-wider">Sessions</span>
-          <span className="text-[10px] text-gray-600 tabular-nums">{maxCount} max</span>
+          <span className="text-[10px] text-gray-600 uppercase tracking-wider">{t("concurrency.sessions")}</span>
+          <span className="text-[10px] text-gray-600 tabular-nums">{maxCount}{t("concurrency.max")}</span>
         </div>
         <div className="flex-shrink-0 w-[72px] text-[10px] text-gray-600 uppercase tracking-wider">
-          Timing
+          {t("concurrency.timing")}
         </div>
       </div>
 

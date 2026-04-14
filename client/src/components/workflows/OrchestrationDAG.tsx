@@ -1,4 +1,5 @@
 import { useRef, useEffect, useMemo, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import type { OrchestrationData } from "../../lib/types";
 
@@ -56,7 +57,7 @@ const MAX_SUBAGENT_NODES = 7;
 const MAX_EDGE_STROKE = 10;
 const MIN_EDGE_STROKE = 1.5;
 
-const LAYER_LABELS = ["Origin", "Main Agent", "Subagent Types", "Compactions", "Outcomes"];
+// Layer labels are now computed via i18n inside the component
 
 const OUTCOME_COLORS: Record<string, { fill: string; stroke: string; text: string }> = {
   completed: { fill: "#052e16", stroke: "#16a34a", text: "#4ade80" },
@@ -127,7 +128,7 @@ function outcomeColorSet(status: string) {
 
 // ── Layout builder ────────────────────────────────────────────────────────────
 
-function buildGraph(data: OrchestrationData): {
+function buildGraph(data: OrchestrationData, t: (key: string) => string): {
   nodes: DAGNode[];
   edges: DAGEdge[];
   svgWidth: number;
@@ -138,7 +139,7 @@ function buildGraph(data: OrchestrationData): {
   // Layer 0 — sessions
   rawNodes.push({
     id: "sessions",
-    label: "Sessions",
+    label: t("orchestration.sessions"),
     count: data.sessionCount,
     layer: 0,
     kind: "session",
@@ -149,7 +150,7 @@ function buildGraph(data: OrchestrationData): {
   // Layer 1 — main agent
   rawNodes.push({
     id: "main",
-    label: "Main Agent",
+    label: t("orchestration.mainAgent"),
     count: data.mainCount,
     layer: 1,
     kind: "main",
@@ -208,7 +209,7 @@ function buildGraph(data: OrchestrationData): {
   const compSessions = compactions?.sessions ?? 0;
   rawNodes.push({
     id: "compaction:total",
-    label: "Compactions",
+    label: t("orchestration.compactions"),
     count: compTotal,
     layer: 3,
     kind: "nested",
@@ -380,11 +381,20 @@ function buildGraph(data: OrchestrationData): {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function OrchestrationDAG({ data, onNodeClick, selectedNode }: OrchestrationDAGProps) {
+  const { t } = useTranslation("workflows");
   const svgRef = useRef<SVGSVGElement>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const graph = useMemo(() => buildGraph(data), [data]);
+  const layerLabels = [
+    t("orchestration.layers.origin"),
+    t("orchestration.layers.mainAgent"),
+    t("orchestration.layers.subagentTypes"),
+    t("orchestration.layers.compactions"),
+    t("orchestration.layers.outcomes"),
+  ];
+
+  const graph = useMemo(() => buildGraph(data, t), [data, t]);
 
   const handleNodeClick = useCallback(
     (node: DAGNode) => {
@@ -404,6 +414,7 @@ export function OrchestrationDAG({ data, onNodeClick, selectedNode }: Orchestrat
     if (!svg) return;
 
     const { nodes, edges, svgHeight } = graph;
+    const currentLayerLabels = layerLabels;
 
     const root = d3.select(svg);
     root.selectAll("*").remove();
@@ -478,7 +489,7 @@ export function OrchestrationDAG({ data, onNodeClick, selectedNode }: Orchestrat
 
     labelLayer
       .selectAll("text")
-      .data(LAYER_LABELS)
+      .data(currentLayerLabels)
       .join("text")
       .attr("x", (_, i) => layerXPositions[i] ?? 0)
       .attr("y", 22)
@@ -666,7 +677,7 @@ export function OrchestrationDAG({ data, onNodeClick, selectedNode }: Orchestrat
       .attr("font-weight", "600")
       .attr("font-family", "Inter, sans-serif")
       .text((d) => fmtCount(d.count));
-  }, [graph, selectedNode, handleNodeClick]);
+  }, [graph, selectedNode, handleNodeClick, layerLabels]);
 
   if (isEmpty(data)) {
     return (
@@ -686,9 +697,9 @@ export function OrchestrationDAG({ data, onNodeClick, selectedNode }: Orchestrat
             <line x1="8" y1="13" x2="16" y2="17" />
           </svg>
         </div>
-        <h3 className="text-base font-medium text-gray-300 mb-2">No orchestration data</h3>
+        <h3 className="text-base font-medium text-gray-300 mb-2">{t("orchestration.noData")}</h3>
         <p className="text-sm text-gray-500 max-w-sm">
-          Agent spawning data will appear here once sessions with subagents have been recorded.
+          {t("orchestration.noDataDesc")}
         </p>
       </div>
     );
@@ -722,7 +733,7 @@ export function OrchestrationDAG({ data, onNodeClick, selectedNode }: Orchestrat
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-1 mt-4">
         <span className="text-[10px] text-gray-600 uppercase tracking-widest font-medium mr-1">
-          Legend
+          {t("orchestration.legend")}
         </span>
         {LEGEND_ITEMS.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5">
@@ -738,7 +749,7 @@ export function OrchestrationDAG({ data, onNodeClick, selectedNode }: Orchestrat
             className="inline-block h-[2px] w-8 rounded flex-shrink-0"
             style={{ background: "linear-gradient(to right, #312e81, #4f46e5)" }}
           />
-          <span className="text-[11px] text-gray-500">Edge weight = frequency</span>
+          <span className="text-[11px] text-gray-500">{t("orchestration.edgeWeight")}</span>
         </div>
       </div>
 
@@ -751,26 +762,27 @@ export function OrchestrationDAG({ data, onNodeClick, selectedNode }: Orchestrat
 // ── Tooltip component ─────────────────────────────────────────────────────────
 
 function DAGTooltip({ tooltip }: { tooltip: TooltipState }) {
+  const { t } = useTranslation("workflows");
   const { x, y, node } = tooltip;
   const nearRight = typeof window !== "undefined" && x > window.innerWidth - 220;
 
   const lines: Array<{ label: string; value: string }> = [
-    { label: "Count", value: String(node.count) },
+    { label: t("orchestration.count"), value: String(node.count) },
   ];
 
   if (node.kind === "subagent" && node.meta) {
     const { completed = 0, errors = 0 } = node.meta;
-    lines.push({ label: "Completed", value: String(completed) });
-    lines.push({ label: "Errors", value: String(errors) });
-    lines.push({ label: "Success rate", value: successRate(completed, node.count) });
+    lines.push({ label: t("common:status.completed", { defaultValue: "Completed" }), value: String(completed) });
+    lines.push({ label: t("common:status.error", { defaultValue: "Errors" }), value: String(errors) });
+    lines.push({ label: t("effectiveness.success", { defaultValue: "Success rate" }), value: successRate(completed, node.count) });
   }
 
   if (node.kind === "nested" && node.meta?.subagent_type) {
-    lines.push({ label: "Type", value: node.meta.subagent_type });
+    lines.push({ label: t("common:type", { defaultValue: "Type" }), value: node.meta.subagent_type });
   }
 
   if (node.kind === "outcome" && node.meta?.status) {
-    lines.push({ label: "Status", value: node.meta.status });
+    lines.push({ label: t("common:status.status", { defaultValue: "Status" }), value: node.meta.status });
   }
 
   return (
