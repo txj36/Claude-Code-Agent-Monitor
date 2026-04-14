@@ -5,6 +5,7 @@
  */
 
 import { useEffect } from "react";
+import i18n from "../i18n";
 import { eventBus } from "../lib/eventBus";
 import type { WSMessage, Session, Agent, DashboardEvent } from "../lib/types";
 
@@ -57,10 +58,6 @@ function notify(title: string, body: string) {
   }
 }
 
-/**
- * Subscribe to the event bus and fire browser notifications based on user preferences.
- * Call once at the app root level.
- */
 export function useNotifications() {
   useEffect(() => {
     return eventBus.subscribe((msg: WSMessage) => {
@@ -71,13 +68,13 @@ export function useNotifications() {
         case "session_created": {
           if (!prefs.onNewSession) return;
           const s = msg.data as Session;
-          notify("New Session", s.name || `Session ${s.id.slice(0, 8)}`);
+          notify(i18n.t("errors:notifications.newSession"), s.name || `${i18n.t("errors:notifications.sessionDefault")}${s.id.slice(0, 8)}`);
           break;
         }
         case "session_updated": {
           const s = msg.data as Session;
           if (s.status === "error" && prefs.onSessionError) {
-            notify("Session Error", s.name || `Session ${s.id.slice(0, 8)}`);
+            notify(i18n.t("errors:notifications.sessionError"), s.name || `${i18n.t("errors:notifications.sessionDefault")}${s.id.slice(0, 8)}`);
           }
           break;
         }
@@ -85,18 +82,18 @@ export function useNotifications() {
           if (!prefs.onSubagentSpawn) return;
           const a = msg.data as Agent;
           if (a.type === "subagent") {
-            notify("Subagent Spawned", a.name);
+            notify(i18n.t("errors:notifications.subagentSpawned"), a.name);
           }
           break;
         }
         case "new_event": {
           const ev = msg.data as DashboardEvent;
           if (ev.event_type === "Stop" && prefs.onSessionComplete) {
-            notify("Claude Finished Responding", ev.summary || "Ready for input");
+            notify(i18n.t("errors:notifications.finishedResponding"), ev.summary || i18n.t("errors:notifications.readyForInput"));
           } else if (ev.event_type === "SessionEnd" && prefs.onSessionComplete) {
-            notify("Session Completed", ev.summary || "Session closed");
+            notify(i18n.t("errors:notifications.sessionCompleted"), ev.summary || i18n.t("errors:notifications.sessionClosed"));
           } else if (ev.event_type === "Notification") {
-            notify("Claude Code", ev.summary || "Notification");
+            notify(i18n.t("errors:notifications.defaultTitle"), ev.summary || i18n.t("errors:notifications.defaultBody"));
           }
           break;
         }

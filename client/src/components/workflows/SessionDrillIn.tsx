@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { X, GitFork, Wrench, List, Search, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { api } from "../../lib/api";
 import { formatDateTime, formatMs } from "../../lib/format";
 import type {
@@ -61,16 +62,16 @@ interface TabBarProps {
   onChange: (t: Tab) => void;
 }
 
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "tree", label: "Agent Tree", icon: <GitFork className="w-3.5 h-3.5" /> },
-  { id: "timeline", label: "Tool Timeline", icon: <Wrench className="w-3.5 h-3.5" /> },
-  { id: "events", label: "Event Sequence", icon: <List className="w-3.5 h-3.5" /> },
-];
-
 function TabBar({ active, onChange }: TabBarProps) {
+  const { t } = useTranslation("workflows");
+  const tabs = [
+    { id: "tree" as Tab, label: t("drillIn.tabs.agentTree"), icon: <GitFork className="w-3.5 h-3.5" /> },
+    { id: "timeline" as Tab, label: t("drillIn.tabs.toolTimeline"), icon: <Wrench className="w-3.5 h-3.5" /> },
+    { id: "events" as Tab, label: t("drillIn.tabs.eventSequence"), icon: <List className="w-3.5 h-3.5" /> },
+  ];
   return (
     <div className="flex gap-1 p-1 bg-surface-3 rounded-lg">
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
@@ -153,8 +154,9 @@ interface AgentTreeProps {
 }
 
 function AgentTree({ tree }: AgentTreeProps) {
+  const { t } = useTranslation("workflows");
   if (tree.length === 0) {
-    return <p className="text-sm text-gray-500 text-center py-8">No agent tree data available.</p>;
+    return <p className="text-sm text-gray-500 text-center py-8">{t("drillIn.noAgentTree")}</p>;
   }
 
   return (
@@ -175,8 +177,9 @@ interface ToolTimelineProps {
 }
 
 function ToolTimeline({ events }: ToolTimelineProps) {
+  const { t } = useTranslation("workflows");
   if (events.length === 0) {
-    return <p className="text-sm text-gray-500 text-center py-8">No tool events recorded.</p>;
+    return <p className="text-sm text-gray-500 text-center py-8">{t("drillIn.noToolEvents")}</p>;
   }
 
   return (
@@ -228,9 +231,10 @@ function eventTypeColor(type: string): string {
 }
 
 function EventSequence({ events }: EventSequenceProps) {
+  const { t } = useTranslation("workflows");
   if (events.length === 0) {
     return (
-      <p className="text-sm text-gray-500 text-center py-8">No events recorded for this session.</p>
+      <p className="text-sm text-gray-500 text-center py-8">{t("drillIn.noEvents")}</p>
     );
   }
 
@@ -265,7 +269,7 @@ function EventSequence({ events }: EventSequenceProps) {
         ))}
         {events.length > 100 && (
           <p className="text-xs text-gray-600 text-center py-2">
-            Showing 100 of {events.length} events
+            {t("drillIn.showingOf", { total: events.length })}
           </p>
         )}
       </div>
@@ -290,12 +294,13 @@ interface ErrorStateProps {
 }
 
 function ErrorState({ message }: ErrorStateProps) {
+  const { t } = useTranslation("workflows");
   return (
     <div className="flex flex-col items-center justify-center py-10 text-center px-4">
       <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-3">
         <X className="w-4 h-4 text-red-400" />
       </div>
-      <p className="text-sm font-medium text-red-400">Failed to load session</p>
+      <p className="text-sm font-medium text-red-400">{t("drillIn.failedLoad")}</p>
       <p className="text-xs text-gray-600 mt-1 max-w-xs">{message}</p>
     </div>
   );
@@ -308,6 +313,12 @@ interface NoSessionStateProps {
 }
 
 function NoSessionState({ onSelectSession }: NoSessionStateProps) {
+  const { t } = useTranslation("workflows");
+  const tabs = [
+    { id: "tree" as Tab, label: t("drillIn.tabs.agentTree"), icon: <GitFork className="w-3.5 h-3.5" /> },
+    { id: "timeline" as Tab, label: t("drillIn.tabs.toolTimeline"), icon: <Wrench className="w-3.5 h-3.5" /> },
+    { id: "events" as Tab, label: t("drillIn.tabs.eventSequence"), icon: <List className="w-3.5 h-3.5" /> },
+  ];
   return (
     <div className="flex flex-col py-6 px-4 border-2 border-dashed border-border rounded-xl">
       <SessionSelector onSelectSession={onSelectSession} />
@@ -316,15 +327,14 @@ function NoSessionState({ onSelectSession }: NoSessionStateProps) {
         <div className="w-10 h-10 rounded-xl bg-surface-4 flex items-center justify-center mb-4">
           <GitFork className="w-5 h-5 text-gray-600" />
         </div>
-        <p className="text-sm font-medium text-gray-400 mb-1">No session selected</p>
+        <p className="text-sm font-medium text-gray-400 mb-1">{t("drillIn.noSessionSelected")}</p>
         <p className="text-xs text-gray-600 max-w-xs">
-          Search and select a session above, or click a bubble in the scatter plot, to drill into
-          its agent tree, tool timeline, and event sequence.
+          {t("drillIn.noSessionDesc")}
         </p>
 
         {/* Preview tab pills */}
         <div className="flex gap-2 mt-5">
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <div
               key={tab.id}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 bg-surface-3 border border-border"
@@ -349,6 +359,7 @@ interface SessionHeaderProps {
 }
 
 function SessionHeader({ drillIn, onClose, activeTab, onTabChange }: SessionHeaderProps) {
+  const { t } = useTranslation("workflows");
   const { session } = drillIn;
 
   return (
@@ -359,7 +370,7 @@ function SessionHeader({ drillIn, onClose, activeTab, onTabChange }: SessionHead
             {session.name ?? session.id}
           </p>
           <p className="text-xs text-gray-500 mt-0.5 truncate">
-            {session.model ?? "unknown model"} &middot; {session.status}
+            {session.model ?? t("drillIn.unknownModel")} &middot; {session.status}
             {session.started_at && ` \u00b7 ${safeTimestamp(session.started_at)}`}
           </p>
         </div>
@@ -386,6 +397,7 @@ interface SessionSelectorProps {
 }
 
 function SessionSelector({ onSelectSession }: SessionSelectorProps) {
+  const { t } = useTranslation("workflows");
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -483,7 +495,7 @@ function SessionSelector({ onSelectSession }: SessionSelectorProps) {
           ref={inputRef}
           type="text"
           value={search}
-          placeholder="Search sessions…"
+          placeholder={t("drillIn.searchPlaceholder")}
           className="flex-1 bg-transparent text-xs text-gray-200 placeholder-gray-600 outline-none min-w-0"
           onFocus={() => setOpen(true)}
           onChange={(e) => {
@@ -515,7 +527,7 @@ function SessionSelector({ onSelectSession }: SessionSelectorProps) {
               </div>
             ) : filtered.length === 0 ? (
               <p className="text-xs text-gray-600 text-center py-6 px-3">
-                {search.trim() ? "No sessions match your search." : "No sessions found."}
+                {search.trim() ? t("drillIn.noMatch") : t("drillIn.notFound")}
               </p>
             ) : (
               <div className="flex flex-col">
@@ -567,7 +579,7 @@ function SessionSelector({ onSelectSession }: SessionSelectorProps) {
                 disabled={loading}
                 className="w-full px-3 py-2 text-xs text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-colors border-t border-border/50 disabled:opacity-50"
               >
-                {loading ? "Loading…" : "Load more"}
+                {loading ? t("drillIn.loading") : t("drillIn.loadMore")}
               </button>
             )}
           </div>

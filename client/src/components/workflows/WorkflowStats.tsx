@@ -3,7 +3,7 @@
  * @description Defines the WorkflowStats component that displays key statistics about agent workflows in a dashboard format. It includes helper functions for formatting durations and determining success rate colors, as well as a reusable StatCard component for consistent styling of individual statistics. The component takes workflow statistics as props and renders them in a responsive grid layout with appropriate icons and accent colors.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
-
+import { useTranslation } from "react-i18next";
 import { GitFork, Users, CheckCircle, ArrowRightLeft, Layers, Clock } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { WorkflowStats } from "../../lib/types";
@@ -56,6 +56,7 @@ export interface WorkflowStatsProps {
 }
 
 export function WorkflowStats({ stats }: WorkflowStatsProps) {
+  const { t } = useTranslation("workflows");
   const topFlowLabel = stats.topFlow
     ? `${stats.topFlow.source} \u2192 ${stats.topFlow.target}`
     : "—";
@@ -65,37 +66,37 @@ export function WorkflowStats({ stats }: WorkflowStatsProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
       <StatCard
-        label="Avg Agent Depth"
+        label={t("stats.avgAgentDepth")}
         value={stats.avgDepth.toFixed(1)}
         icon={GitFork}
         accentClass="text-indigo-400"
       />
       <StatCard
-        label="Avg Subagents / Session"
+        label={t("stats.avgSubagentsPerSession")}
         value={stats.avgSubagents.toFixed(1)}
         icon={Users}
         accentClass="text-blue-400"
       />
       <StatCard
-        label="Agent Success Rate"
+        label={t("stats.agentSuccessRate")}
         value={`${stats.successRate.toFixed(1)}%`}
         icon={CheckCircle}
         accentClass={srColor}
       />
       <StatCard
-        label="Most Common Flow"
+        label={t("stats.mostCommonFlow")}
         value={topFlowLabel}
         icon={ArrowRightLeft}
         accentClass="text-violet-400"
       />
       <StatCard
-        label="Avg Compactions"
+        label={t("stats.avgCompactions")}
         value={stats.avgCompactions.toFixed(1)}
         icon={Layers}
         accentClass="text-cyan-400"
       />
       <StatCard
-        label="Avg Duration"
+        label={t("stats.avgDuration")}
         value={formatDurationSec(stats.avgDurationSec)}
         icon={Clock}
         accentClass="text-amber-400"

@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { RefreshCw, Columns3, ChevronDown } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
@@ -17,6 +18,7 @@ const COLUMNS: AgentStatus[] = ["idle", "connected", "working", "completed", "er
 const COLUMN_PAGE_SIZE = 10;
 
 export function KanbanBoard() {
+  const { t } = useTranslation("kanban");
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, number>>({});
@@ -58,17 +60,17 @@ export function KanbanBoard() {
             <Columns3 className="w-4.5 h-4.5 text-accent" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-100">Agent Board</h1>
-            <p className="text-xs text-gray-500">Kanban view of all agents by status</p>
+            <h1 className="text-lg font-semibold text-gray-100">{t("title")}</h1>
+            <p className="text-xs text-gray-500">{t("subtitle")}</p>
           </div>
         </div>
         <EmptyState
           icon={Columns3}
-          title="No agents tracked yet"
-          description="Start a Claude Code session with hooks installed to see agents appear here."
+          title={t("noAgents")}
+          description={t("noAgentsDesc")}
           action={
             <button onClick={load} className="btn-primary">
-              <RefreshCw className="w-4 h-4" /> Refresh
+              <RefreshCw className="w-4 h-4" /> {t("common:refresh")}
             </button>
           }
         />
@@ -84,14 +86,14 @@ export function KanbanBoard() {
             <Columns3 className="w-4.5 h-4.5 text-accent" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-100">Agent Board</h1>
+            <h1 className="text-lg font-semibold text-gray-100">{t("title")}</h1>
             <p className="text-xs text-gray-500">
-              {agents.length} agent{agents.length !== 1 ? "s" : ""} tracked
+              {t("agentCount", { count: agents.length })}
             </p>
           </div>
         </div>
         <button onClick={load} className="btn-ghost flex-shrink-0">
-          <RefreshCw className="w-4 h-4" /> Refresh
+          <RefreshCw className="w-4 h-4" /> {t("common:refresh")}
         </button>
       </div>
 
@@ -111,7 +113,7 @@ export function KanbanBoard() {
                   }`}
                 />
                 <span className={`text-xs font-semibold uppercase tracking-wider ${config.color}`}>
-                  {config.label}
+                  {t(config.labelKey)}
                 </span>
                 <span className="ml-auto text-[11px] text-gray-600 bg-surface-3 px-2 py-0.5 rounded-full">
                   {items?.length ?? 0}
@@ -135,14 +137,15 @@ export function KanbanBoard() {
                         className="w-full py-2 text-[11px] text-gray-500 hover:text-gray-300 flex items-center justify-center gap-1 transition-colors"
                       >
                         <ChevronDown className="w-3 h-3" />
-                        Show more ({items.length - (expanded[status] || COLUMN_PAGE_SIZE)}{" "}
-                        remaining)
+                        {t("common:showMore", {
+                          count: items.length - (expanded[status] || COLUMN_PAGE_SIZE),
+                        })}
                       </button>
                     )}
                   </>
                 ) : (
                   <div className="flex items-center justify-center h-24 text-xs text-gray-600">
-                    No agents
+                    {t("noAgentsInColumn")}
                   </div>
                 )}
               </div>

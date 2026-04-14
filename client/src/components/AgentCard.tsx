@@ -3,7 +3,7 @@
  * @description Defines the AgentCard component that displays a summary of an agent's information, including its name, status, task, current tool, and timestamps. The card is clickable and navigates to the agent's session details when clicked. It also visually distinguishes active agents with a border highlight.
  * @author Son Nguyen <hoangson091104@gmail.com>
  */
-
+import { useTranslation } from "react-i18next";
 import { Bot, GitBranch, Clock, Wrench } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AgentStatusBadge } from "./StatusBadge";
@@ -17,6 +17,7 @@ interface AgentCardProps {
 
 export function AgentCard({ agent, onClick }: AgentCardProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation("kanban");
   const isActive = agent.status === "working" || agent.status === "connected";
 
   function handleClick() {
@@ -74,7 +75,7 @@ export function AgentCard({ agent, onClick }: AgentCardProps) {
           <>
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              ran {formatDuration(agent.started_at, agent.ended_at)}
+              {t("ran")}{formatDuration(agent.started_at, agent.ended_at)}
             </span>
             <span className="text-gray-600">{timeAgo(agent.ended_at)}</span>
           </>

@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   Bot,
@@ -28,6 +29,7 @@ import type { Session, Agent, DashboardEvent, SessionStatus, CostResult } from "
 export function SessionDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation("sessions");
   const [session, setSession] = useState<Session | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [events, setEvents] = useState<DashboardEvent[]>([]);
@@ -35,7 +37,6 @@ export function SessionDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(() => {
-    // Auto-expand on first render; useEffect below handles live updates
     return new Set<string>();
   });
 
@@ -52,11 +53,11 @@ export function SessionDetail() {
       setCost(costData);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load session");
+      setError(err instanceof Error ? err.message : t("detail.failedLoad"));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     load();
@@ -70,7 +71,6 @@ export function SessionDetail() {
         parentsWithActiveChildren.add(a.parent_agent_id);
       }
     }
-    // Walk up the parent chain so nested active agents expand all ancestors
     if (parentsWithActiveChildren.size > 0) {
       const agentMap = new Map(agents.map((a) => [a.id, a]));
       const toExpand = new Set<string>();
@@ -101,16 +101,16 @@ export function SessionDetail() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">Loading session...</div>
+      <div className="flex items-center justify-center h-64 text-gray-500">{t("detail.loading")}</div>
     );
   }
 
   if (error || !session) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-400 mb-2">{error || "Session not found"}</p>
+        <p className="text-red-400 mb-2">{error || t("detail.notFound")}</p>
         <button onClick={() => navigate("/sessions")} className="btn-ghost mt-4">
-          <ArrowLeft className="w-4 h-4" /> Back to Sessions
+          <ArrowLeft className="w-4 h-4" /> {t("detail.backToSessions")}
         </button>
       </div>
     );
@@ -126,7 +126,7 @@ export function SessionDetail() {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h2 className="text-xl font-semibold text-gray-100">
-              {session.name || `Session ${session.id.slice(0, 8)}`}
+              {session.name || `${t("defaultName")}${session.id.slice(0, 8)}`}
             </h2>
             <SessionStatusBadge status={session.status as SessionStatus} />
           </div>
@@ -174,14 +174,13 @@ export function SessionDetail() {
       <div>
         <h3 className="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
           <Bot className="w-4 h-4" />
-          Agents ({agents.length})
+          {t("detail.agents")} ({agents.length})
         </h3>
         {agents.length === 0 ? (
-          <p className="text-sm text-gray-500">No agents recorded.</p>
+          <p className="text-sm text-gray-500">{t("detail.noAgents")}</p>
         ) : (
           <div className="space-y-2">
             {(() => {
-              // Build parent→children map for the full tree (works at any depth)
               const agentMap = new Map(agents.map((a) => [a.id, a]));
               const childrenByParent = new Map<string, Agent[]>();
               const rootAgents: Agent[] = [];
@@ -195,13 +194,11 @@ export function SessionDetail() {
                 }
               }
 
-              // Count all descendants (recursive) for collapsed badge
               function countDescendants(id: string): number {
                 const kids = childrenByParent.get(id) || [];
                 return kids.reduce((sum, k) => sum + 1 + countDescendants(k.id), 0);
               }
 
-              // Recursive agent node renderer
               function renderAgentNode(agent: Agent, depth: number) {
                 const children = childrenByParent.get(agent.id) || [];
                 const isExpanded = expandedAgents.has(agent.id);
@@ -240,27 +237,24 @@ export function SessionDetail() {
                       </div>
                     </div>
 
-                    {/* Recursive children (collapsible) */}
                     {hasChildren && isExpanded && (
                       <div className="ml-6 mt-1 space-y-1 border-l-2 border-violet-500/20 pl-3">
                         {children.map((child) => renderAgentNode(child, depth + 1))}
                       </div>
                     )}
 
-                    {/* Descendant count badge when collapsed */}
                     {hasChildren && !isExpanded && (
                       <button
                         onClick={() => setExpandedAgents((prev) => new Set([...prev, agent.id]))}
                         className="ml-7 mt-1 text-[11px] text-violet-400 hover:text-violet-300 transition-colors"
                       >
-                        {totalDesc} subagent{totalDesc !== 1 ? "s" : ""}
+                        {t("common:subagent_label", { count: totalDesc })}
                       </button>
                     )}
                   </div>
                 );
               }
 
-              // Separate true orphans (subagent whose parent_agent_id references a missing agent)
               const orphans = rootAgents.filter(
                 (a) =>
                   a.type === "subagent" && a.parent_agent_id && !agentMap.has(a.parent_agent_id)
@@ -274,11 +268,10 @@ export function SessionDetail() {
                 <>
                   {roots.map((agent) => renderAgentNode(agent, 0))}
 
-                  {/* Orphaned subagents */}
                   {orphans.length > 0 && (
                     <div className="mt-4">
                       <p className="text-[11px] text-gray-500 mb-2 uppercase tracking-wider">
-                        Unparented Subagents
+                        {t("detail.unparented")}
                       </p>
                       <div className="space-y-1">
                         {orphans.map((agent) => renderAgentNode(agent, 1))}
@@ -297,29 +290,29 @@ export function SessionDetail() {
         <div>
           <h3 className="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
-            Cost Breakdown
+            {t("detail.costBreakdown")}
           </h3>
           <div className="card overflow-x-auto">
             <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-border text-left">
                   <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Model
+                    {t("common:cost.model")}
                   </th>
                   <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                    Input
+                    {t("common:token.input")}
                   </th>
                   <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                    Output
+                    {t("common:token.output")}
                   </th>
                   <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                    Cache Read
+                    {t("common:token.cacheRead")}
                   </th>
                   <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                    Cache Write
+                    {t("common:token.cacheWrite")}
                   </th>
                   <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                    Cost
+                    {t("common:cost.cost")}
                   </th>
                 </tr>
               </thead>
@@ -346,7 +339,7 @@ export function SessionDetail() {
                 ))}
                 <tr className="bg-surface-2">
                   <td className="px-5 py-2.5 text-sm font-medium text-gray-200" colSpan={5}>
-                    Total
+                    {t("common:total")}
                   </td>
                   <td className="px-5 py-2.5 text-sm text-emerald-400 text-right font-mono font-semibold">
                     {fmtCostFull(cost.total_cost, 4)}
@@ -360,9 +353,9 @@ export function SessionDetail() {
 
       {/* Event Timeline */}
       <div>
-        <h3 className="text-sm font-medium text-gray-300 mb-4">Event Timeline ({events.length})</h3>
+        <h3 className="text-sm font-medium text-gray-300 mb-4">{t("detail.eventTimeline")} ({events.length})</h3>
         {events.length === 0 ? (
-          <p className="text-sm text-gray-500">No events recorded.</p>
+          <p className="text-sm text-gray-500">{t("detail.noEvents")}</p>
         ) : (
           <div className="card overflow-hidden">
             <div className="divide-y divide-border max-h-[600px] overflow-y-auto overflow-x-auto">

@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Workflow, RefreshCw, Download, AlertCircle, Info } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
@@ -26,6 +27,7 @@ import { SessionDrillIn } from "../components/workflows/SessionDrillIn";
 type StatusFilter = "all" | "active" | "completed";
 
 export function Workflows() {
+  const { t } = useTranslation("workflows");
   const [data, setData] = useState<WorkflowData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export function Workflows() {
       setData(result);
       setLastUpdated(new Date());
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load workflow data");
+      setError(err instanceof Error ? err.message : t("failedLoad"));
     } finally {
       setLoading(false);
     }
@@ -117,7 +119,7 @@ export function Workflows() {
           <AlertCircle className="w-10 h-10 text-red-400" />
           <p className="text-red-400 text-sm">{error}</p>
           <button onClick={handleRefresh} className="btn-primary text-sm">
-            Retry
+            {t("common:retry")}
           </button>
         </div>
       </div>
@@ -143,8 +145,8 @@ export function Workflows() {
       {/* Section 1: Agent Orchestration DAG */}
       <Section
         number={1}
-        title="Agent Orchestration Graph"
-        subtitle="Aggregate spawning patterns across all sessions — Click a node to filter"
+        title={t("orchestration.title")}
+        subtitle={t("orchestration.subtitle")}
       >
         <OrchestrationDAG
           data={data.orchestration}
@@ -153,7 +155,7 @@ export function Workflows() {
         />
         {selectedNode && (
           <div className="mt-3 flex items-center gap-2">
-            <span className="text-xs text-gray-500">Filtered by:</span>
+            <span className="text-xs text-gray-500">{t("filteredBy")}</span>
             <span className="badge bg-accent/15 text-accent border border-accent/20 text-xs">
               {selectedNode}
             </span>
@@ -161,7 +163,7 @@ export function Workflows() {
               onClick={() => setSelectedNode(null)}
               className="text-xs text-gray-500 hover:text-gray-300 underline"
             >
-              Clear filter
+              {t("clearFilter")}
             </button>
           </div>
         )}
@@ -170,8 +172,8 @@ export function Workflows() {
       {/* Section 2: Tool Execution Flow */}
       <Section
         number={2}
-        title="Tool Execution Flow"
-        subtitle="How tools chain together — Sankey-style directed flow"
+        title={t("toolFlow.title")}
+        subtitle={t("toolFlow.subtitle")}
       >
         <ToolExecutionFlow data={data.toolFlow} filterAgentType={selectedNode} />
       </Section>
@@ -179,8 +181,8 @@ export function Workflows() {
       {/* Section 3: Agent Collaboration Network */}
       <Section
         number={3}
-        title="Agent Pipeline Graph"
-        subtitle="Directed workflow — which agent types run after which, with frequency labels"
+        title={t("pipeline.title")}
+        subtitle={t("pipeline.subtitle")}
       >
         <AgentCollaborationNetwork effectiveness={data.effectiveness} edges={data.cooccurrence} />
       </Section>
@@ -189,16 +191,16 @@ export function Workflows() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Section
           number={4}
-          title="Subagent Effectiveness"
-          subtitle="Performance metrics per agent type"
+          title={t("effectiveness.title")}
+          subtitle={t("effectiveness.subtitle")}
         >
           <SubagentEffectiveness data={data.effectiveness} />
         </Section>
 
         <Section
           number={5}
-          title="Detected Workflow Patterns"
-          subtitle="Common agent orchestration sequences"
+          title={t("patterns.title")}
+          subtitle={t("patterns.subtitle")}
         >
           <WorkflowPatterns data={data.patterns} onPatternClick={() => {}} />
         </Section>
@@ -208,16 +210,16 @@ export function Workflows() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Section
           number={6}
-          title="Model Delegation Flow"
-          subtitle="How models route through agent hierarchies"
+          title={t("modelDelegation.title")}
+          subtitle={t("modelDelegation.subtitle")}
         >
           <ModelDelegationFlow data={data.modelDelegation} />
         </Section>
 
         <Section
           number={7}
-          title="Error Propagation Map"
-          subtitle="Where errors cluster in agent hierarchy depth"
+          title={t("errorPropagation.title")}
+          subtitle={t("errorPropagation.subtitle")}
         >
           <ErrorPropagationMap data={data.errorPropagation} />
         </Section>
@@ -226,8 +228,8 @@ export function Workflows() {
       {/* Section 8: Agent Concurrency Timeline */}
       <Section
         number={8}
-        title="Agent Concurrency Timeline"
-        subtitle="Parallel agent execution patterns — Shows how agents overlap in time"
+        title={t("concurrency.title")}
+        subtitle={t("concurrency.subtitle")}
       >
         <ConcurrencyTimeline data={data.concurrency} />
       </Section>
@@ -236,16 +238,16 @@ export function Workflows() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Section
           number={9}
-          title="Session Complexity Scatter"
-          subtitle="Duration vs agent count vs tokens — Bubble size = token usage"
+          title={t("complexity.title")}
+          subtitle={t("complexity.subtitle")}
         >
           <SessionComplexityScatter data={data.complexity} onSessionClick={setSelectedSessionId} />
         </Section>
 
         <Section
           number={10}
-          title="Compaction Impact Analysis"
-          subtitle="Context compression events and token recovery"
+          title={t("compaction.title")}
+          subtitle={t("compaction.subtitle")}
         >
           <CompactionImpact data={data.compaction} />
         </Section>
@@ -254,8 +256,8 @@ export function Workflows() {
       {/* Section 11: Session Drill-In */}
       <Section
         number={11}
-        title="Session Drill-In"
-        subtitle="Select a session from the scatter plot or use the dropdown to explore"
+        title={t("drillIn.title")}
+        subtitle={t("drillIn.subtitle")}
       >
         <SessionDrillIn
           sessionId={selectedSessionId}
@@ -326,10 +328,11 @@ function PageHeader({
   onExport: () => void;
   lastUpdated: Date | null;
 }) {
+  const { t } = useTranslation("workflows");
   const filters: { value: StatusFilter; label: string }[] = [
-    { value: "all", label: "All Sessions" },
-    { value: "active", label: "Active Only" },
-    { value: "completed", label: "Completed" },
+    { value: "all", label: t("allSessions") },
+    { value: "active", label: t("activeOnly") },
+    { value: "completed", label: t("completed") },
   ];
 
   return (
@@ -339,8 +342,8 @@ function PageHeader({
           <Workflow className="w-4.5 h-4.5 text-accent" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold text-gray-100">Workflows</h1>
-          <p className="text-xs text-gray-500">Agent orchestration intelligence</p>
+          <h1 className="text-lg font-semibold text-gray-100">{t("title")}</h1>
+          <p className="text-xs text-gray-500">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -366,21 +369,21 @@ function PageHeader({
         <button
           onClick={onRefresh}
           className="p-2 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-surface-3 transition-colors"
-          title="Refresh data"
+          title={t("refreshData")}
         >
           <RefreshCw className="w-4 h-4" />
         </button>
         <button
           onClick={onExport}
           className="p-2 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-surface-3 transition-colors"
-          title="Export as JSON"
+          title={t("exportJson")}
         >
           <Download className="w-4 h-4" />
         </button>
 
         {lastUpdated && (
           <span className="text-[10px] text-gray-600 ml-1">
-            Updated {lastUpdated.toLocaleTimeString()}
+            {t("common:updated")}{lastUpdated.toLocaleTimeString()}
           </span>
         )}
       </div>

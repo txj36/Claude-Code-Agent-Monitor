@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -30,6 +31,7 @@ import type { Stats, Agent, DashboardEvent, WSMessage } from "../lib/types";
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
   const [stats, setStats] = useState<Stats | null>(null);
   const [activeAgents, setActiveAgents] = useState<Agent[]>([]);
   const [recentEvents, setRecentEvents] = useState<DashboardEvent[]>([]);
@@ -65,9 +67,9 @@ export function Dashboard() {
       const subs = subagentResults.flatMap((r) => r.agents).filter((a) => a.type === "subagent");
       setAllSubagents(subs);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(err instanceof Error ? err.message : t("failedLoad"));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -117,10 +119,10 @@ export function Dashboard() {
   if (error) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-400 mb-2">Failed to connect to server</p>
+        <p className="text-red-400 mb-2">{t("failedConnect")}</p>
         <p className="text-sm text-gray-500">{error}</p>
         <button onClick={load} className="btn-primary mt-4">
-          Retry
+          {t("common:retry")}
         </button>
       </div>
     );
@@ -134,57 +136,57 @@ export function Dashboard() {
             <LayoutDashboard className="w-4.5 h-4.5 text-accent" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-100">Dashboard</h1>
+            <h1 className="text-lg font-semibold text-gray-100">{t("title")}</h1>
             <p className="text-xs text-gray-500">
-              Real-time overview of Claude Code agent activity
+              {t("subtitle")}
             </p>
           </div>
         </div>
         <button onClick={load} className="btn-ghost flex-shrink-0">
-          <RefreshCw className="w-4 h-4" /> Refresh
+          <RefreshCw className="w-4 h-4" /> {t("common:refresh")}
         </button>
       </div>
 
       {/* Stats grid — 2 rows of 3 avoids the 6-column squeeze */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <StatCard
-          label="Total Sessions"
+          label={t("totalSessions")}
           value={stats ? fmt(stats.total_sessions) : "-"}
           raw={stats ? stats.total_sessions.toLocaleString() : undefined}
           icon={FolderOpen}
-          trend={stats ? `${stats.active_sessions} active` : undefined}
+          trend={stats ? `${stats.active_sessions}${t("activeTrend")}` : undefined}
         />
         <StatCard
-          label="Active Agents"
+          label={t("activeAgents")}
           value={stats?.active_agents ?? "-"}
           icon={Bot}
           accentColor="text-emerald-400"
         />
         <StatCard
-          label="Active Subagents"
+          label={t("activeSubagents")}
           value={
             allSubagents.filter((a) => a.status === "working" || a.status === "connected").length
           }
           icon={GitBranch}
           accentColor="text-violet-400"
-          trend={`${allSubagents.length} total`}
+          trend={`${allSubagents.length}${t("totalTrend")}`}
         />
         <StatCard
-          label="Events Today"
+          label={t("eventsToday")}
           value={stats ? fmt(stats.events_today) : "-"}
           raw={stats ? stats.events_today.toLocaleString() : undefined}
           icon={Zap}
           accentColor="text-yellow-400"
         />
         <StatCard
-          label="Total Events"
+          label={t("totalEvents")}
           value={stats ? fmt(stats.total_events) : "-"}
           raw={stats ? stats.total_events.toLocaleString() : undefined}
           icon={Activity}
           accentColor="text-violet-400"
         />
         <StatCard
-          label="Total Cost"
+          label={t("totalCost")}
           value={totalCost !== null ? fmtCost(totalCost) : "-"}
           raw={
             totalCost !== null
@@ -200,16 +202,16 @@ export function Dashboard() {
         {/* Active agents */}
         <div className="min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-300">Active Agents</h3>
+            <h3 className="text-sm font-medium text-gray-300">{t("activeAgentsSection")}</h3>
             <button onClick={() => navigate("/kanban")} className="btn-ghost text-xs">
-              View Board <ArrowRight className="w-3 h-3" />
+              {t("viewBoard")} <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           {activeAgents.length === 0 ? (
             <EmptyState
               icon={Bot}
-              title="No active agents"
-              description="Agents will appear here when a Claude Code session is running."
+              title={t("noAgents")}
+              description={t("noAgentsDesc")}
             />
           ) : (
             <div className="space-y-2">
@@ -290,9 +292,9 @@ export function Dashboard() {
                           onClick={() => setExpandedAgents((prev) => new Set([...prev, agent.id]))}
                           className="ml-7 mt-1 text-[11px] text-violet-400 hover:text-violet-300 transition-colors"
                         >
-                          {totalDesc} subagent{totalDesc !== 1 ? "s" : ""}
+                          {totalDesc} {t("common:subagent", { count: totalDesc })}
                           {activeDesc > 0 && (
-                            <span className="text-emerald-400 ml-1">({activeDesc} active)</span>
+                            <span className="text-emerald-400 ml-1">({activeDesc} {t("common:active")})</span>
                           )}
                         </button>
                       )}
@@ -324,16 +326,16 @@ export function Dashboard() {
         {/* Recent activity */}
         <div className="min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-300">Recent Activity</h3>
+            <h3 className="text-sm font-medium text-gray-300">{t("recentActivity")}</h3>
             <button onClick={() => navigate("/activity")} className="btn-ghost text-xs">
-              View All <ArrowRight className="w-3 h-3" />
+              {t("viewAll")} <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           {recentEvents.length === 0 ? (
             <EmptyState
               icon={Activity}
-              title="No activity yet"
-              description="Events from Claude Code sessions will stream here in real-time."
+              title={t("noActivity")}
+              description={t("noActivityDesc")}
             />
           ) : (
             <div className="card divide-y divide-border">

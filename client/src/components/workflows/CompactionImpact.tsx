@@ -5,6 +5,7 @@
  */
 
 import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 import type { CompactionImpactData } from "../../lib/types";
 
@@ -24,7 +25,7 @@ const CHART_HEIGHT = 160;
 
 // ── D3 renderer ───────────────────────────────────────────────────────────────
 
-function renderBars(svg: SVGSVGElement, perSession: CompactionImpactData["perSession"]): void {
+function renderBars(svg: SVGSVGElement, perSession: CompactionImpactData["perSession"], t: (key: string) => string): void {
   const container = svg.parentElement;
   const width = container ? container.clientWidth : 400;
   const innerW = width - MARGIN.left - MARGIN.right;
@@ -100,7 +101,7 @@ function renderBars(svg: SVGSVGElement, perSession: CompactionImpactData["perSes
     .attr("fill", "#6b7280")
     .attr("font-size", 10)
     .attr("font-family", "Inter, sans-serif")
-    .text(`${sorted.length} session${sorted.length === 1 ? "" : "s"} (sorted by compaction count)`);
+    .text(`${sorted.length} ${t("compaction.sortedByCompaction")}`);
 
   // Bars
   sorted.forEach((d) => {
@@ -159,6 +160,7 @@ export interface CompactionImpactProps {
 }
 
 export function CompactionImpact({ data }: CompactionImpactProps) {
+  const { t } = useTranslation("workflows");
   const svgRef = useRef<SVGSVGElement>(null);
 
   const hasData = data.totalCompactions > 0;
@@ -170,7 +172,7 @@ export function CompactionImpact({ data }: CompactionImpactProps) {
   useEffect(() => {
     if (!svgRef.current || !hasData) return;
     const nonZero = data.perSession.filter((s) => s.compactions > 0);
-    renderBars(svgRef.current, nonZero);
+    renderBars(svgRef.current, nonZero, t);
   }, [data, hasData]);
 
   if (!hasData) {
@@ -190,7 +192,7 @@ export function CompactionImpact({ data }: CompactionImpactProps) {
           <path d="M17 21v-6" />
           <path d="M21 17h-6" />
         </svg>
-        <span className="text-sm">No compactions recorded</span>
+        <span className="text-sm">{t("compaction.noData")}</span>
       </div>
     );
   }
@@ -200,12 +202,12 @@ export function CompactionImpact({ data }: CompactionImpactProps) {
       {/* Stat boxes */}
       <div className="flex gap-3">
         <StatBox
-          label="Total Compactions"
+          label={t("compaction.totalCompactions")}
           value={data.totalCompactions.toLocaleString()}
           accent="text-accent-hover"
         />
         <StatBox
-          label="Tokens Recovered"
+          label={t("compaction.tokensRecovered")}
           value={fmtTokens(data.tokensRecovered)}
           accent="text-emerald-400"
         />
@@ -214,7 +216,7 @@ export function CompactionImpact({ data }: CompactionImpactProps) {
       {/* Bar chart */}
       <div className="w-full overflow-hidden">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-          Compaction distribution across sessions
+          {t("compaction.distribution")}
         </p>
         <svg
           ref={svgRef}
@@ -227,9 +229,7 @@ export function CompactionImpact({ data }: CompactionImpactProps) {
 
       {/* Summary line */}
       <p className="text-xs text-gray-500">
-        <span className="text-gray-300 font-medium">{data.sessionsWithCompactions}</span> of{" "}
-        <span className="text-gray-300 font-medium">{data.totalSessions}</span> sessions (
-        <span className="text-gray-300 font-medium">{sessionPct}%</span>) had compactions
+        {t("compaction.hadCompactions", { pct: sessionPct })}
       </p>
     </div>
   );

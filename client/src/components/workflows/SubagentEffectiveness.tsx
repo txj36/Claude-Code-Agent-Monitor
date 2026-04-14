@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { SubagentEffectivenessItem } from "../../lib/types";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -41,6 +42,7 @@ interface SuccessRingProps {
 }
 
 function SuccessRing({ rate, color }: SuccessRingProps) {
+  const { t } = useTranslation("workflows");
   const clampedRate = Math.max(0, Math.min(100, rate));
   const filled = (clampedRate / 100) * RING_CIRCUMFERENCE;
   const gap = RING_CIRCUMFERENCE - filled;
@@ -93,7 +95,7 @@ function SuccessRing({ rate, color }: SuccessRingProps) {
         </text>
       </svg>
       <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-        Success
+        {t("effectiveness.success")}
       </span>
     </div>
   );
@@ -187,6 +189,7 @@ interface ScoreCardProps {
 }
 
 function ScoreCard({ item, colorIndex }: ScoreCardProps) {
+  const { t } = useTranslation("workflows");
   const color = COLORS[colorIndex % COLORS.length] ?? COLORS[0];
 
   return (
@@ -217,13 +220,13 @@ function ScoreCard({ item, colorIndex }: ScoreCardProps) {
 
       {/* Metric boxes */}
       <div className="flex gap-2">
-        <MetricBox label="Sessions" value={String(item.sessions)} />
-        <MetricBox label="Avg Duration" value={formatDurationSec(item.avgDuration)} />
+        <MetricBox label={t("effectiveness.sessions")} value={String(item.sessions)} />
+        <MetricBox label={t("effectiveness.avgDuration")} value={formatDurationSec(item.avgDuration)} />
       </div>
 
       {/* Sparkline */}
       <div className="flex flex-col gap-1">
-        <span className="text-[10px] text-gray-500 uppercase tracking-wider">Weekly activity</span>
+        <span className="text-[10px] text-gray-500 uppercase tracking-wider">{t("effectiveness.weeklyActivity")}</span>
         <Sparkline data={item.trend} color={color} />
       </div>
     </div>
@@ -235,10 +238,11 @@ export interface SubagentEffectivenessProps {
 }
 
 export function SubagentEffectiveness({ data }: SubagentEffectivenessProps) {
+  const { t } = useTranslation("workflows");
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center py-16 text-gray-500 text-sm">
-        No subagent data available
+        {t("effectiveness.noData")}
       </div>
     );
   }

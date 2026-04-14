@@ -282,34 +282,34 @@ export interface SessionDrillIn {
 
 export const STATUS_CONFIG: Record<
   AgentStatus,
-  { label: string; color: string; bg: string; dot: string }
+  { labelKey: string; color: string; bg: string; dot: string }
 > = {
   idle: {
-    label: "Idle",
+    labelKey: "common:status.idle",
     color: "text-gray-400",
     bg: "bg-gray-500/10 border-gray-500/20",
     dot: "bg-gray-400",
   },
   connected: {
-    label: "Connected",
+    labelKey: "common:status.connected",
     color: "text-blue-400",
     bg: "bg-blue-500/10 border-blue-500/20",
     dot: "bg-blue-400",
   },
   working: {
-    label: "Working",
+    labelKey: "common:status.working",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10 border-emerald-500/20",
     dot: "bg-emerald-400",
   },
   completed: {
-    label: "Completed",
+    labelKey: "common:status.completed",
     color: "text-violet-400",
     bg: "bg-violet-500/10 border-violet-500/20",
     dot: "bg-violet-400",
   },
   error: {
-    label: "Error",
+    labelKey: "common:status.error",
     color: "text-red-400",
     bg: "bg-red-500/10 border-red-500/20",
     dot: "bg-red-400",
@@ -318,21 +318,21 @@ export const STATUS_CONFIG: Record<
 
 export const SESSION_STATUS_CONFIG: Record<
   SessionStatus,
-  { label: string; color: string; bg: string }
+  { labelKey: string; color: string; bg: string }
 > = {
   active: {
-    label: "Active",
+    labelKey: "common:status.active",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10 border-emerald-500/20",
   },
   completed: {
-    label: "Completed",
+    labelKey: "common:status.completed",
     color: "text-violet-400",
     bg: "bg-violet-500/10 border-violet-500/20",
   },
-  error: { label: "Error", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
+  error: { labelKey: "common:status.error", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
   abandoned: {
-    label: "Abandoned",
+    labelKey: "common:status.abandoned",
     color: "text-yellow-400",
     bg: "bg-yellow-500/10 border-yellow-500/20",
   },

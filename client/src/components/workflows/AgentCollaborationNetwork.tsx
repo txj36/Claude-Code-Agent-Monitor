@@ -5,6 +5,7 @@
  */
 
 import { useRef, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import * as d3 from "d3";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -67,7 +68,7 @@ const MAX_R = 44;
 
 // ── Safe tooltip DOM builder ──
 
-function showTooltip(el: HTMLDivElement, d: PipelineNode, x: number, y: number) {
+function showTooltip(el: HTMLDivElement, d: PipelineNode, x: number, y: number, t: (key: string) => string) {
   el.textContent = "";
 
   const title = document.createElement("p");
@@ -76,9 +77,9 @@ function showTooltip(el: HTMLDivElement, d: PipelineNode, x: number, y: number) 
   el.appendChild(title);
 
   const rows: [string, string][] = [
-    ["Spawned", String(d.total) + " times"],
+    ["Spawned", String(d.total) + t("pipeline.spawns")],
     ["In sessions", String(d.sessions)],
-    ["Success", Math.round(d.successRate) + "%"],
+    [t("effectiveness.success"), Math.round(d.successRate) + "%"],
   ];
   for (const [label, value] of rows) {
     const row = document.createElement("div");
@@ -107,6 +108,7 @@ export function AgentCollaborationNetwork({
   effectiveness,
   edges,
 }: AgentCollaborationNetworkProps) {
+  const { t } = useTranslation("workflows");
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<d3.Simulation<PipelineNode, PipelineLink> | null>(null);
@@ -347,7 +349,7 @@ export function AgentCollaborationNetwork({
         d3.select(event.currentTarget as SVGGElement)
           .select("circle")
           .attr("stroke-width", 4);
-        if (tipEl) showTooltip(tipEl, d, event.clientX, event.clientY);
+        if (tipEl) showTooltip(tipEl, d, event.clientX, event.clientY, t);
       })
       .on("mousemove", (event: MouseEvent) => {
         if (tipEl) {
@@ -454,14 +456,14 @@ export function AgentCollaborationNetwork({
     return () => {
       simulation.stop();
     };
-  }, [nodes, links, isEmpty]);
+  }, [nodes, links, isEmpty, t]);
 
   if (isEmpty) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <p className="text-sm font-medium text-gray-400">No pipeline data yet</p>
+        <p className="text-sm font-medium text-gray-400">{t("pipeline.noData")}</p>
         <p className="text-xs text-gray-600 mt-1">
-          Directed workflow edges appear once agent types run sequentially across multiple sessions.
+          {t("pipeline.noDataDesc")}
         </p>
       </div>
     );
@@ -482,7 +484,7 @@ export function AgentCollaborationNetwork({
       />
       <div className="flex flex-wrap items-center gap-3 mt-3 px-1">
         <span className="text-[10px] text-gray-600 uppercase tracking-widest font-medium">
-          Legend
+          {t("pipeline.legend")}
         </span>
         {nodes.map((n) => (
           <div key={n.id} className="flex items-center gap-1.5">
@@ -501,7 +503,7 @@ export function AgentCollaborationNetwork({
             <line x1="0" y1="4" x2="14" y2="4" stroke="#64748b" strokeWidth="1.5" />
             <polygon points="14,1 20,4 14,7" fill="#64748b" />
           </svg>
-          <span className="text-[11px] text-gray-500">A runs before B (labeled count)</span>
+          <span className="text-[11px] text-gray-500">{t("pipeline.legendDesc")}</span>
         </div>
       </div>
     </div>

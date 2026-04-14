@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   DollarSign,
   Plus,
@@ -179,6 +180,7 @@ function Toggle({
 // ─── Main component ───
 
 export function Settings() {
+  const { t } = useTranslation("settings");
   const [pricing, setPricing] = useState<ModelPricing[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPattern, setEditingPattern] = useState<string | null>(null);
@@ -217,7 +219,6 @@ export function Settings() {
     load();
   }, [load]);
 
-  // Live refresh: periodic for uptime/ws-clients, WS-driven for DB counts
   useEffect(() => {
     const refreshInfo = () =>
       api.settings
@@ -247,8 +248,8 @@ export function Settings() {
 
   useEffect(() => {
     if (!actionResult) return;
-    const t = setTimeout(() => setActionResult(null), 5000);
-    return () => clearTimeout(t);
+    const timeout = setTimeout(() => setActionResult(null), 5000);
+    return () => clearTimeout(timeout);
   }, [actionResult]);
 
   const updateNotifPrefs = (patch: Partial<NotifPrefs>) => {
@@ -294,7 +295,7 @@ export function Settings() {
 
   const saveEdit = async () => {
     if (!editRow.model_pattern.trim() || !editRow.display_name.trim()) {
-      setError("Pattern and display name are required");
+      setError(t("pricing.validationRequired"));
       return;
     }
     setSaving(true);
@@ -349,19 +350,19 @@ export function Settings() {
     runAction("clear", async () => {
       const res = await api.settings.clearData();
       const total = Object.values(res.cleared).reduce((s, n) => s + n, 0);
-      return `Cleared ${total} rows`;
+      return t("danger.clearedResult", { count: total });
     });
 
   const handleReinstallHooks = () =>
     runAction("hooks", async () => {
       const res = await api.settings.reinstallHooks();
-      return res.ok ? "Hooks installed successfully" : "Hook installation failed";
+      return res.ok ? t("hooks.success") : t("hooks.failed");
     });
 
   const handleResetPricing = () =>
     runAction("reset-pricing", async () => {
       const res = await api.settings.resetPricing();
-      return `Reset to ${res.pricing.length} default rules`;
+      return t("pricing.resetResult", { count: res.pricing.length });
     });
 
   const handleCleanup = () =>
@@ -373,12 +374,12 @@ export function Settings() {
       if (pd > 0) params.purge_days = pd;
       const res = await api.settings.cleanup(params);
       const parts = [];
-      if (res.abandoned > 0) parts.push(`${res.abandoned} sessions abandoned`);
+      if (res.abandoned > 0) parts.push(`${res.abandoned}${t("data.abandonedResult")}`);
       if (res.purged_sessions > 0)
         parts.push(
-          `${res.purged_sessions} sessions purged (${res.purged_events} events, ${res.purged_agents} agents)`
+          `${res.purged_sessions}${t("data.purgedResult", { events: res.purged_events, agents: res.purged_agents })}`
         );
-      return parts.length > 0 ? parts.join(". ") : "Nothing to clean up";
+      return parts.length > 0 ? parts.join(". ") : t("data.nothingToClean");
     });
 
   const lastUpdated =
@@ -398,7 +399,7 @@ export function Settings() {
           type="text"
           value={editRow.model_pattern}
           onChange={(e) => setEditRow((r) => ({ ...r, model_pattern: e.target.value }))}
-          placeholder="claude-opus-4%"
+          placeholder={t("pricing.patternPlaceholder")}
           disabled={editingPattern !== null}
           className="input w-full text-sm font-mono disabled:opacity-50"
           autoFocus={adding}
@@ -409,7 +410,7 @@ export function Settings() {
           type="text"
           value={editRow.display_name}
           onChange={(e) => setEditRow((r) => ({ ...r, display_name: e.target.value }))}
-          placeholder="Claude Opus 4"
+          placeholder={t("pricing.namePlaceholder")}
           className="input w-full text-sm"
         />
       </td>
@@ -494,7 +495,7 @@ export function Settings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">Loading settings...</div>
+      <div className="flex items-center justify-center h-64 text-gray-500">{t("common:loading")}</div>
     );
   }
 
@@ -507,8 +508,8 @@ export function Settings() {
             <SettingsIcon className="w-4.5 h-4.5 text-accent" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-100">Settings</h1>
-            <p className="text-xs text-gray-500">Manage pricing, notifications, data, and hooks</p>
+            <h1 className="text-lg font-semibold text-gray-100">{t("title")}</h1>
+            <p className="text-xs text-gray-500">{t("subtitle")}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -518,10 +519,10 @@ export function Settings() {
             className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors"
           >
             <FileDown className="w-3.5 h-3.5" />
-            Export Data
+            {t("exportData")}
           </a>
           <button onClick={load} className="btn-ghost">
-            <RefreshCw className="w-4 h-4" /> Refresh
+            <RefreshCw className="w-4 h-4" /> {t("common:refresh")}
           </button>
         </div>
       </div>
@@ -534,7 +535,7 @@ export function Settings() {
               <DollarSign className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total Estimated Cost</p>
+              <p className="text-sm text-gray-500">{t("common:cost.totalEstimatedCost")}</p>
               <p className="text-2xl font-semibold text-gray-100">
                 <Tip
                   raw={
@@ -549,8 +550,8 @@ export function Settings() {
             </div>
           </div>
           <div className="text-right text-xs text-gray-500">
-            <p>Across all tracked sessions</p>
-            <p>Based on per-model token usage</p>
+            <p>{t("acrossSessions")}</p>
+            <p>{t("basedOnUsage")}</p>
           </div>
         </div>
       </div>
@@ -561,11 +562,10 @@ export function Settings() {
           <div>
             <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-gray-500" />
-              Model Pricing
+              {t("pricing.title")}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Rates per million tokens (USD). Use <code className="text-gray-400">%</code> as
-              wildcard in patterns.
+              {t("pricing.description")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -583,14 +583,14 @@ export function Settings() {
               }`}
             >
               <RotateCcw className="w-3 h-3 inline mr-1" />
-              {confirmAction === "reset-pricing" ? "Confirm Reset" : "Reset Defaults"}
+              {confirmAction === "reset-pricing" ? t("pricing.resetConfirm") : t("pricing.resetDefaults")}
             </button>
             <button
               onClick={startAdd}
               disabled={isEditing}
               className="btn-primary text-xs disabled:opacity-50"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Model
+              <Plus className="w-3.5 h-3.5" /> {t("pricing.addModel")}
             </button>
           </div>
         </div>
@@ -611,19 +611,19 @@ export function Settings() {
                   Pattern
                 </th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  Display Name
+                  {t("common:cost.model")}
                 </th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                  Input
+                  {t("common:token.input")}
                 </th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                  Output
+                  {t("common:token.output")}
                 </th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                  Cache Read
+                  {t("common:token.cacheRead")}
                 </th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
-                  Cache Write
+                  {t("common:token.cacheWrite")}
                 </th>
                 <th className="w-24 px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                   Actions
@@ -686,7 +686,7 @@ export function Settings() {
         </div>
 
         {lastUpdated && (
-          <p className="text-xs text-gray-600 mt-3">Last updated: {formatTimestamp(lastUpdated)}</p>
+          <p className="text-xs text-gray-600 mt-3">{t("pricing.lastUpdated")}{formatTimestamp(lastUpdated)}</p>
         )}
       </section>
 
@@ -694,10 +694,10 @@ export function Settings() {
       <section>
         <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-1">
           <Plug className="w-4 h-4 text-gray-500" />
-          Hook Configuration
+          {t("hooks.title")}
         </h3>
         <p className="text-xs text-gray-500 mb-4">
-          Claude Code hooks forward events to the dashboard in real time.
+          {t("hooks.description")}
         </p>
 
         <div className="card p-5 space-y-4">
@@ -705,11 +705,11 @@ export function Settings() {
             <div className="flex items-center gap-3">
               {sysInfo?.hooks.installed ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                  <CheckCircle className="w-3.5 h-3.5" /> All hooks installed
+                  <CheckCircle className="w-3.5 h-3.5" /> {t("hooks.allInstalled")}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Hooks incomplete
+                  <AlertTriangle className="w-3.5 h-3.5" /> {t("hooks.incomplete")}
                 </span>
               )}
             </div>
@@ -723,7 +723,7 @@ export function Settings() {
               ) : (
                 <RotateCcw className="w-3.5 h-3.5" />
               )}
-              Reinstall Hooks
+              {t("hooks.reinstall")}
             </button>
           </div>
 
@@ -756,14 +756,13 @@ export function Settings() {
       <section>
         <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-1">
           <Bell className="w-4 h-4 text-gray-500" />
-          Notifications
+          {t("notifications.title")}
         </h3>
         <p className="text-xs text-gray-500 mb-4">
-          Browser notifications for important events. Requires permission.
+          {t("notifications.description")}
         </p>
 
         <div className="card p-5 space-y-5">
-          {/* Master toggle + permission status */}
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div
@@ -788,7 +787,7 @@ export function Settings() {
                     updateNotifPrefs({ enabled: v });
                   }
                 }}
-                label="Enable Browser Notifications"
+                label={t("notifications.enable")}
               />
             </div>
             {"Notification" in window && (
@@ -809,19 +808,18 @@ export function Settings() {
                   <ShieldAlert className="w-3 h-3" />
                 )}
                 {Notification.permission === "granted"
-                  ? "Permission granted"
+                  ? t("notifications.granted")
                   : Notification.permission === "denied"
-                    ? "Permission blocked"
-                    : "Permission required"}
+                    ? t("notifications.blocked")
+                    : t("notifications.required")}
               </span>
             )}
           </div>
 
-          {/* Event toggles */}
           {notifPrefs.enabled && (
             <div className="space-y-3 pt-4 border-t border-border">
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                Notify me when...
+                {t("notifications.notifyWhen")}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="flex items-center gap-3 bg-surface-2 rounded-lg px-3.5 py-3">
@@ -829,7 +827,7 @@ export function Settings() {
                   <Toggle
                     checked={notifPrefs.onNewSession}
                     onChange={(v) => updateNotifPrefs({ onNewSession: v })}
-                    label="New session starts"
+                    label={t("notifications.newSession")}
                   />
                 </div>
                 <div className="flex items-center gap-3 bg-surface-2 rounded-lg px-3.5 py-3">
@@ -837,7 +835,7 @@ export function Settings() {
                   <Toggle
                     checked={notifPrefs.onSessionComplete}
                     onChange={(v) => updateNotifPrefs({ onSessionComplete: v })}
-                    label="Session completes"
+                    label={t("notifications.sessionComplete")}
                   />
                 </div>
                 <div className="flex items-center gap-3 bg-surface-2 rounded-lg px-3.5 py-3">
@@ -845,7 +843,7 @@ export function Settings() {
                   <Toggle
                     checked={notifPrefs.onSessionError}
                     onChange={(v) => updateNotifPrefs({ onSessionError: v })}
-                    label="Session errors"
+                    label={t("notifications.sessionError")}
                   />
                 </div>
                 <div className="flex items-center gap-3 bg-surface-2 rounded-lg px-3.5 py-3">
@@ -853,18 +851,17 @@ export function Settings() {
                   <Toggle
                     checked={notifPrefs.onSubagentSpawn}
                     onChange={(v) => updateNotifPrefs({ onSubagentSpawn: v })}
-                    label="Subagent spawned"
+                    label={t("notifications.subagentSpawned")}
                   />
                 </div>
               </div>
 
-              {/* Test notification */}
               <div className="pt-3 border-t border-border">
                 <button
                   onClick={() => {
                     if ("Notification" in window && Notification.permission === "granted") {
-                      new Notification("Agent Monitor", {
-                        body: "Notifications are working!",
+                      new Notification(t("notifications.testTitle"), {
+                        body: t("notifications.testBody"),
                         icon: "/favicon.ico",
                       });
                     }
@@ -872,7 +869,7 @@ export function Settings() {
                   className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-surface-4 border border-border transition-colors"
                 >
                   <Zap className="w-3 h-3" />
-                  Send Test Notification
+                  {t("notifications.sendTest")}
                 </button>
               </div>
             </div>
@@ -881,7 +878,7 @@ export function Settings() {
           {!notifPrefs.enabled && (
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <BellOff className="w-3.5 h-3.5" />
-              Notifications are disabled — enable to get alerts for session events
+              {t("notifications.disabledInfo")}
             </div>
           )}
         </div>
@@ -891,16 +888,15 @@ export function Settings() {
       <section>
         <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-1">
           <Database className="w-4 h-4 text-gray-500" />
-          Data Management
+          {t("data.title")}
         </h3>
-        <p className="text-xs text-gray-500 mb-4">Database info, import/export, and cleanup.</p>
+        <p className="text-xs text-gray-500 mb-4">{t("data.description")}</p>
 
         <div className="space-y-4">
-          {/* DB stats grid */}
           <div className="card p-5 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold flex-shrink-0">
-                Database Overview
+                {t("data.dbOverview")}
               </p>
               {sysInfo && (
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-600 font-mono bg-surface-2 px-2.5 py-1 rounded-md min-w-0">
@@ -921,11 +917,11 @@ export function Settings() {
                     model_pricing: <BarChart3 className="w-4 h-4 text-cyan-400" />,
                   };
                   const tableLabels: Record<string, string> = {
-                    sessions: "sessions",
-                    agents: "agents",
-                    events: "events",
-                    token_usage: "sessions with cost",
-                    model_pricing: "pricing rules",
+                    sessions: t("tables.sessions"),
+                    agents: t("tables.agents"),
+                    events: t("tables.events"),
+                    token_usage: t("tables.sessionsWithCost"),
+                    model_pricing: t("tables.pricingRules"),
                   };
                   const tableColors: Record<string, string> = {
                     sessions: "border-blue-500/20",
@@ -954,7 +950,7 @@ export function Settings() {
                 <div className="bg-surface-2 rounded-lg px-3 py-3 border-l-2 border-indigo-500/20">
                   <div className="flex items-center gap-2 mb-1.5">
                     <HardDrive className="w-4 h-4 text-indigo-400" />
-                    <p className="text-[11px] text-gray-500 uppercase tracking-wider">DB Size</p>
+                    <p className="text-[11px] text-gray-500 uppercase tracking-wider">{t("data.dbSize")}</p>
                   </div>
                   <p className="text-xl font-semibold text-gray-200">
                     {formatBytes(sysInfo.db.size)}
@@ -962,7 +958,7 @@ export function Settings() {
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-gray-500">Loading database info...</p>
+              <p className="text-xs text-gray-500">{t("data.loadingDb")}</p>
             )}
           </div>
 
@@ -973,15 +969,15 @@ export function Settings() {
                 <Eraser className="w-4 h-4 text-amber-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-300">Session Cleanup</p>
-                <p className="text-xs text-gray-500">Abandon stale sessions and purge old data</p>
+                <p className="text-sm font-medium text-gray-300">{t("data.sessionCleanup")}</p>
+                <p className="text-xs text-gray-500">{t("data.cleanupDesc")}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="bg-surface-2 rounded-lg px-4 py-3">
                 <label className="text-xs text-gray-400 block mb-2">
-                  Abandon stale active sessions older than
+                  {t("data.abandonAfter")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -991,12 +987,12 @@ export function Settings() {
                     onChange={(e) => setAbandonHours(e.target.value)}
                     className="input w-20 text-sm text-right font-mono"
                   />
-                  <span className="text-xs text-gray-500">hours</span>
+                  <span className="text-xs text-gray-500">{t("common:hours")}</span>
                 </div>
               </div>
               <div className="bg-surface-2 rounded-lg px-4 py-3">
                 <label className="text-xs text-gray-400 block mb-2">
-                  Purge completed/errored sessions older than
+                  {t("data.purgeAfter")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -1006,7 +1002,7 @@ export function Settings() {
                     onChange={(e) => setPurgeDays(e.target.value)}
                     className="input w-20 text-sm text-right font-mono"
                   />
-                  <span className="text-xs text-gray-500">days</span>
+                  <span className="text-xs text-gray-500">{t("common:days")}</span>
                 </div>
               </div>
             </div>
@@ -1027,7 +1023,7 @@ export function Settings() {
               ) : (
                 <Eraser className="w-3 h-3 inline mr-1" />
               )}
-              {confirmAction === "cleanup" ? "Confirm Cleanup" : "Run Cleanup"}
+              {confirmAction === "cleanup" ? t("data.confirmCleanup") : t("data.runCleanup")}
             </button>
 
             {actionBanner(["cleanup"])}
@@ -1040,9 +1036,9 @@ export function Settings() {
                 <AlertTriangle className="w-4 h-4 text-red-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-red-400">Danger Zone</p>
+                <p className="text-sm font-medium text-red-400">{t("danger.title")}</p>
                 <p className="text-xs text-gray-500">
-                  Irreversible actions that delete data permanently
+                  {t("danger.description")}
                 </p>
               </div>
             </div>
@@ -1050,7 +1046,7 @@ export function Settings() {
             {confirmAction === "clear" ? (
               <div className="bg-red-500/5 border border-red-500/20 rounded-lg px-4 py-3 flex items-center justify-between flex-wrap gap-3">
                 <span className="text-xs text-amber-400">
-                  This will delete all sessions, agents, events, and token data. Are you sure?
+                  {t("danger.warning")}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -1061,13 +1057,13 @@ export function Settings() {
                     {actionLoading === "clear" ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin inline mr-1" />
                     ) : null}
-                    Yes, Clear All
+                    {t("danger.yesClearAll")}
                   </button>
                   <button
                     onClick={() => setConfirmAction(null)}
                     className="text-xs px-3 py-1.5 rounded-md text-gray-400 hover:bg-surface-4 transition-colors"
                   >
-                    Cancel
+                    {t("common:cancel")}
                   </button>
                 </div>
               </div>
@@ -1078,7 +1074,7 @@ export function Settings() {
                 className="text-xs px-3 py-1.5 rounded-md text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-colors disabled:opacity-50"
               >
                 <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
-                Clear All Data
+                {t("danger.clearAllData")}
               </button>
             )}
 
@@ -1091,9 +1087,9 @@ export function Settings() {
       <section>
         <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-1">
           <Server className="w-4 h-4 text-gray-500" />
-          About
+          {t("about.title")}
         </h3>
-        <p className="text-xs text-gray-500 mb-4">Server runtime information.</p>
+        <p className="text-xs text-gray-500 mb-4">{t("about.description")}</p>
 
         {sysInfo ? (
           <div className="card p-5">
@@ -1101,7 +1097,7 @@ export function Settings() {
               <div className="bg-surface-2 rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Clock className="w-4 h-4 text-blue-400" />
-                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">Uptime</p>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">{t("about.uptime")}</p>
                 </div>
                 <p className="text-sm font-semibold text-gray-200">
                   {formatUptime(sysInfo.server.uptime)}
@@ -1110,7 +1106,7 @@ export function Settings() {
               <div className="bg-surface-2 rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Cpu className="w-4 h-4 text-emerald-400" />
-                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">Node.js</p>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">{t("about.nodejs")}</p>
                 </div>
                 <p className="text-sm font-semibold text-gray-200 font-mono">
                   {sysInfo.server.node_version}
@@ -1119,14 +1115,14 @@ export function Settings() {
               <div className="bg-surface-2 rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Globe className="w-4 h-4 text-violet-400" />
-                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">Platform</p>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">{t("about.platform")}</p>
                 </div>
                 <p className="text-sm font-semibold text-gray-200">{sysInfo.server.platform}</p>
               </div>
               <div className="bg-surface-2 rounded-lg px-4 py-3">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Wifi className="w-4 h-4 text-amber-400" />
-                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">WS Clients</p>
+                  <p className="text-[11px] text-gray-500 uppercase tracking-wider">{t("about.wsClients")}</p>
                 </div>
                 <p className="text-sm font-semibold text-gray-200">
                   {sysInfo.server.ws_connections}
@@ -1135,7 +1131,7 @@ export function Settings() {
             </div>
           </div>
         ) : (
-          <p className="text-xs text-gray-500">Loading server info...</p>
+          <p className="text-xs text-gray-500">{t("about.loadingInfo")}</p>
         )}
       </section>
     </div>
