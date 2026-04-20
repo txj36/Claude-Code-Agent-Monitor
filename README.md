@@ -195,7 +195,7 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 | **Responsive Design**              | Mobile-friendly layouts with stacking grids, scrollable tables, and collapsible sidebar                                                                                                                                                                                      |
 | **UI Localization**                | Built-in language switching with translated UI copy and accessibility labels for English (`en`), Chinese (`zh`), and Vietnamese (`vi`)                                                                                                                                       |
 | **Seed Data**                      | Built-in seed script for demos and development                                                                                                                                                                                                                               |
-| **Statusline**                     | Color-coded CLI statusline showing model, context usage, git branch, tokens                                                                                                                                                                                                  |
+| **Statusline**                     | Color-coded CLI statusline showing model, context usage, git branch, per-direction tokens, and session cost (USD)                                                                                                                                                            |
 | **Plugin Marketplace**             | Official Claude Code plugin marketplace with 5 plugins (ccam-analytics, ccam-productivity, ccam-devtools, ccam-insights, ccam-dashboard). 18 skills, 4 agents, 3 CLI tools, 2 hook configs. All grounded in actual data model — token baselines, pricing engine, workflow intelligence (11 datasets), session metadata. Install via `claude plugin marketplace add` |
 
 ---
@@ -1063,25 +1063,28 @@ claude plugin marketplace add hoangsonww/Claude-Code-Agent-Monitor
 
 ## Statusline
 
-A standalone CLI statusline utility for Claude Code that displays model name, user, working directory, git branch, context window usage bar, and token counts -- all color-coded with ANSI escape sequences.
+A standalone CLI statusline utility for Claude Code that displays model name, user, working directory, git branch, context window usage bar, per-direction token counts, and session cost -- all color-coded with ANSI escape sequences.
 
 ```
-Sonnet 4.6 | nguyens6 | ~/agent-dashboard/client | main | ████████░░ 79% | 3↑ 2↓ 156586c
+nguyens6@host ~/agent-dashboard/client | Sonnet 4.6 | main | ████████░░ 79% | 3↑ 2↓ 156586c | $0.4231
 ```
 
-| Segment     | Color                | Example             |
-| ----------- | -------------------- | ------------------- |
-| Model       | Cyan                 | `Sonnet 4.6`        |
-| User        | Green                | `nguyens6`          |
-| CWD         | Yellow               | `~/agent-dashboard` |
-| Git branch  | Magenta              | `main`              |
-| Context bar | Green / Yellow / Red | `████████░░ 79%`    |
-| Tokens      | Dim                  | `3↑ 2↓ 156586c`     |
+| Segment     | Color                | Example                                                        |
+| ----------- | -------------------- | -------------------------------------------------------------- |
+| Model       | Cyan                 | `Sonnet 4.6`                                                   |
+| User        | Green                | `nguyens6`                                                     |
+| CWD         | Yellow               | `~/agent-dashboard`                                            |
+| Git branch  | Magenta              | `main`                                                         |
+| Context bar | Green / Yellow / Red | `████████░░ 79%`                                               |
+| Tokens      | Green / Cyan / Dim   | `3↑ 2↓ 156586c` (green `↑` in, cyan `↓` out, dim `c` cache)    |
+| Cost (USD)  | Green / Yellow / Red | `$0.4231` (session total — shown on API and subscription plans)|
+
+Cost color thresholds: green under $5, yellow $5–$20, red $20+.
 
 See [`statusline/README.md`](statusline/README.md) for installation instructions.
 
 <p align="center">
-  <img src="images/statusline.png" alt="Statusline Demo" width="600">
+  <img src="images/statusline.png" alt="Statusline Demo" width="100%">
 </p>
 
 ---
