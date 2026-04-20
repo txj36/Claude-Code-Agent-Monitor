@@ -903,8 +903,9 @@
                   <p>
                     Standalone CLI statusline for Claude Code showing model name, user, working
                     directory, git branch, a color-coded context window usage bar (green/yellow/red),
-                    and token counts. ANSI-colored output that updates on every turn. Python-based
-                    with a shell wrapper for easy integration.
+                    per-direction token counts (green ↑ in, cyan ↓ out, dim cache), and session cost
+                    in USD (green/yellow/red by threshold). ANSI-colored output that updates on every
+                    turn. Python-based with a shell wrapper for easy integration.
                   </p>
                 </div>
                 <div class="feature-card">
@@ -3417,12 +3418,12 @@ ccam-export all --output backup.json</code></pre>
           <p>
             The <code>statusline/</code> directory contains a standalone CLI statusline for Claude
             Code — completely independent of the web dashboard. It renders a color-coded bar at the
-            bottom of the Claude Code terminal showing context window usage, token counts, and git
-            branch.
+            bottom of the Claude Code terminal showing context window usage, per-direction token
+            counts, session cost in USD, and git branch.
           </p>
 
           <div class="code-header"><span class="code-lang">terminal output</span></div>
-          <pre><code>Sonnet 4.6 | nguyens6 | ~/agent-dashboard/client | main | ████████░░ 79% | 3↑ 2↓ 156586c</code></pre>
+          <pre><code>nguyens6@host ~/agent-dashboard/client | Sonnet 4.6 | main | ████████░░ 79% | 3↑ 2↓ 156586c | $0.4231</code></pre>
 
           <div class="table-wrap">
             <table>
@@ -3463,8 +3464,13 @@ ccam-export all --output backup.json</code></pre>
                   <td>Token Counts</td>
                   <td><code>data.context_window.current_usage</code></td>
                   <td>
-                    Dim — <code>↑</code> input, <code>↓</code> output, <code>c</code> cache reads
+                    Green <code>↑</code> input, cyan <code>↓</code> output, dim <code>c</code> cache reads
                   </td>
+                </tr>
+                <tr>
+                  <td>Session Cost</td>
+                  <td><code>data.cost.total_cost_usd</code></td>
+                  <td>Green &lt; $5, Yellow $5–$20, Red ≥ $20 (shown on API and subscription plans)</td>
                 </tr>
               </tbody>
             </table>
@@ -3481,10 +3487,10 @@ ccam-export all --output backup.json</code></pre>
 
                 CC->>SH: stdin (JSON payload)
                 SH->>PY: Pipe stdin through (PYTHONUTF8=1)
-                PY->>PY: Parse JSON (model, cwd, context_window)
+                PY->>PY: Parse JSON (model, cwd, context_window, cost)
                 PY->>GIT: git symbolic-ref --short HEAD
                 GIT-->>PY: Branch name
-                PY->>PY: Build ANSI-colored segments
+                PY->>PY: Build ANSI-colored segments (incl. tokens by direction, cost)
                 PY-->>CC: stdout (formatted statusline)
             </div>
             <p class="diagram-label">

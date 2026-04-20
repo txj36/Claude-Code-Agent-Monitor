@@ -1738,7 +1738,7 @@ graph TB
 
 ## Statusline Utility
 
-The `statusline/` directory contains a standalone CLI statusline for Claude Code, separate from the web dashboard. It renders a color-coded bar at the bottom of the Claude Code terminal.
+The `statusline/` directory contains a standalone CLI statusline for Claude Code, separate from the web dashboard. It renders a color-coded bar at the bottom of the Claude Code terminal showing model, user, working directory, git branch, context window usage, per-direction token counts, and session cost in USD.
 
 ### Data Flow
 
@@ -1751,23 +1751,24 @@ sequenceDiagram
 
     CC->>SH: stdin (JSON payload)
     SH->>PY: Pipes stdin through
-    PY->>PY: Parse JSON (model, cwd, context_window)
+    PY->>PY: Parse JSON (model, cwd, context_window, cost)
     PY->>GIT: git symbolic-ref --short HEAD
     GIT-->>PY: Branch name
-    PY->>PY: Build ANSI-colored segments
+    PY->>PY: Build ANSI-colored segments (incl. tokens by direction, cost)
     PY-->>CC: stdout (formatted statusline)
 ```
 
 ### Segments
 
-| Segment      | Source                                | Color Logic                                        |
-| ------------ | ------------------------------------- | -------------------------------------------------- |
-| Model        | `data.model.display_name`             | Always cyan                                        |
-| User         | `$USERNAME` / `$USER` env var         | Always green                                       |
-| Working Dir  | `data.workspace.current_dir`          | Always yellow, `~` prefix for home                 |
-| Git Branch   | `git symbolic-ref --short HEAD`       | Always magenta, hidden outside git repos           |
-| Context Bar  | `data.context_window.used_percentage` | Green < 50%, Yellow 50–79%, Red >= 80%             |
-| Token Counts | `data.context_window.current_usage`   | Always dim; `↑` input, `↓` output, `c` cache reads |
+| Segment      | Source                                | Color Logic                                                                          |
+| ------------ | ------------------------------------- | ------------------------------------------------------------------------------------ |
+| Model        | `data.model.display_name`             | Always cyan                                                                          |
+| User         | `$USERNAME` / `$USER` env var         | Always green                                                                         |
+| Working Dir  | `data.workspace.current_dir`          | Always yellow, `~` prefix for home                                                   |
+| Git Branch   | `git symbolic-ref --short HEAD`       | Always magenta, hidden outside git repos                                             |
+| Context Bar  | `data.context_window.used_percentage` | Green < 50%, Yellow 50–79%, Red >= 80%                                               |
+| Token Counts | `data.context_window.current_usage`   | Green `↑` input, cyan `↓` output, dim `c` cache reads                                |
+| Session Cost | `data.cost.total_cost_usd`            | Green < $5, Yellow $5–$20, Red >= $20 (shown on API and subscription plans)          |
 
 ### Integration
 

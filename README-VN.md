@@ -1082,7 +1082,7 @@ Sonnet 4.6 | nguyens6 | ~/agent-dashboard/client | main | ███████�
 Xem [`statusline/README.md`](statusline/README.md) để biết hướng dẫn cài đặt.
 
 <p align="center">
-  <img src="images/statusline.png" alt="Statusline Demo" width="600">
+  <img src="images/statusline.png" alt="Statusline Demo" width="100%">
 </p>
 
 ---
