@@ -43,7 +43,16 @@ export function UpdateNotifier() {
     api.updates
       .status()
       .then((s) => {
-        if (!cancelled) syncFromPayload(s);
+        if (cancelled) return;
+        syncFromPayload(s);
+        // Mirror the initial /status into the local event bus so other components
+        // (e.g. the Sidebar "Check for updates" button) can react to it without
+        // triggering a second git fetch on mount.
+        eventBus.publish({
+          type: "update_status",
+          data: s,
+          timestamp: new Date().toISOString(),
+        });
       })
       .catch(() => {});
     return () => {
