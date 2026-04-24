@@ -3727,18 +3727,18 @@ ccam-export all --output backup.json</code></pre>
           <div class="diagram-wrap">
             <pre class="mermaid">
 flowchart LR
-    S["Server start"] --> SCHED["Scheduler<br/>every 5 min"]
-    SCHED --> FETCH["git fetch --prune<br/>execFile, 120s"]
-    FETCH --> CMP["Compare HEAD<br/>vs origin ref"]
-    CMP --> FP{"Behind?"}
-    FP -->|yes| CHG{"Fingerprint<br/>changed?"}
-    FP -->|no| IDLE["Idle"]
-    CHG -->|yes| WS["broadcast<br/>update_status"]
-    CHG -->|no| IDLE
-    WS --> UI["Modal + Sidebar badge"]
+    S["Server start"] --> SCHED["Scheduler every 5 min"]
+    SCHED --> FETCH["git fetch prune<br/>120s timeout"]
+    FETCH --> CMP["Compare HEAD vs upstream"]
+    CMP --> DECIDE["Behind or up-to-date"]
+    DECIDE -->|behind| CHANGED["Fingerprint compared"]
+    DECIDE -->|up-to-date| IDLE["No action"]
+    CHANGED -->|changed| WS["Broadcast update_status"]
+    CHANGED -->|same| IDLE
+    WS --> UI["Modal and Sidebar badge"]
 
-    CHECK["POST /updates/check"] --> FETCH
-    STATUS["GET /updates/status"] -.-> CMP
+    CHECK["POST updates check"] --> FETCH
+    STATUS["GET updates status"] -.-> CMP
 
     style WS fill:#6366f1,stroke:#818cf8,color:#fff
     style UI fill:#10b981,stroke:#34d399,color:#fff
