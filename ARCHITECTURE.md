@@ -1489,27 +1489,27 @@ The Update Notifier is a **detection-only** subsystem that tells the user when t
 
 ```mermaid
 graph TD
-    subgraph "Server"
-        LIB["server/lib/update-check.js<br/>getUpdatesStatus()"]
-        SCHED["server/update-scheduler.js<br/>startUpdateScheduler({ broadcast })"]
-        ROUTE["server/routes/updates.js<br/>GET /status · POST /check"]
-        WS["server/websocket.js<br/>broadcast('update_status', …)"]
+    subgraph Server
+        LIB["update-check.js<br/>getUpdatesStatus"]
+        SCHED["update-scheduler.js<br/>startUpdateScheduler"]
+        ROUTE["routes/updates.js<br/>GET status, POST check"]
+        WS["websocket.js<br/>broadcast update_status"]
     end
 
-    subgraph "Client"
-        API["client/src/lib/api.ts<br/>api.updates.{status,check}"]
-        BUS["client/src/lib/eventBus.ts<br/>subscribe / publish"]
-        MODAL["UpdateNotifier.tsx<br/>dismissedSha → localStorage"]
+    subgraph Client
+        API["lib/api.ts<br/>api.updates"]
+        BUS["lib/eventBus.ts<br/>subscribe and publish"]
+        MODAL["UpdateNotifier.tsx<br/>dismissedSha in localStorage"]
         SIDEBAR["Sidebar.tsx<br/>Check-for-updates button"]
     end
 
     SCHED -->|tick every 5 min| LIB
     ROUTE -->|on request| LIB
     SCHED -->|fingerprint changed| WS
-    ROUTE -->|POST /check| WS
+    ROUTE -->|on POST check| WS
     WS -->|update_status frame| API
-    API -->|status() mirror| BUS
-    WS -->|forwarded by eventBus| BUS
+    API -->|mirror to bus| BUS
+    WS --> BUS
     BUS --> MODAL
     BUS --> SIDEBAR
     SIDEBAR -->|click| API
@@ -1525,36 +1525,36 @@ graph TD
 sequenceDiagram
     autonumber
     participant Sched as Scheduler
-    participant Lib as update-check.js
+    participant Lib as update-check lib
     participant Git as git
     participant WS as WebSocket broadcast
-    participant Client as UpdateNotifier / Sidebar
+    participant Client as Modal and Sidebar
 
-    Sched->>Lib: tick()
-    Lib->>Lib: fs.existsSync(.git)?
+    Sched->>Lib: tick
+    Lib->>Lib: check .git exists
     alt not a git repo
-        Lib-->>Sched: {git_repo:false, update_available:false}
+        Lib-->>Sched: soft payload, git_repo false
     else git repo
-        Lib->>Git: git remote → has "origin"?
+        Lib->>Git: git remote, look for origin
         alt no origin
-            Lib-->>Sched: {message:"No origin remote configured"}
+            Lib-->>Sched: soft payload, no origin message
         else
-            Lib->>Git: git fetch origin --prune (120s timeout)
+            Lib->>Git: git fetch origin --prune, 120s timeout
             alt fetch fails
-                Lib-->>Sched: {fetch_error:"…"}
+                Lib-->>Sched: soft payload with fetch_error
             else
                 Lib->>Git: git rev-parse HEAD
-                Lib->>Git: git rev-parse origin/master|main|HEAD
+                Lib->>Git: git rev-parse upstream ref
                 Lib->>Git: git rev-list --count HEAD..ref
-                Lib-->>Sched: {update_available, remote_sha, commits_behind, manual_command}
+                Lib-->>Sched: full payload with commits_behind
             end
         end
     end
-    Sched->>Sched: fingerprint = JSON.stringify({a,r,b,e})
+    Sched->>Sched: compute fingerprint
     alt fingerprint changed
-        Sched->>WS: broadcast("update_status", payload)
+        Sched->>WS: broadcast update_status
         WS->>Client: WS frame
-        Client->>Client: syncFromPayload → render modal/badge
+        Client->>Client: syncFromPayload, render modal or badge
     else unchanged
         Sched->>Sched: skip broadcast
     end
