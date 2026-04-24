@@ -772,7 +772,7 @@
 
           <div class="screenshot-gallery gallery-single">
             <div class="screenshot-card">
-              <img src="images/analytics.png" alt="Claude Code Agent Monitor dashboard showing live agent cards, stats, and recent activity feed" />
+              <img src="images/analytics.png" alt="Claude Code Agent Monitor dashboard showing live agent cards, stats, and recent activity feed" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">📡</span> Live dashboard — real-time agent cards, stats, and activity feed</div>
             </div>
           </div>
@@ -1104,27 +1104,27 @@
           <h3>Screenshots</h3>
           <div class="screenshot-gallery">
             <div class="screenshot-card">
-              <img src="images/sessions.png" alt="Sessions table with search, filters, status badges, and pagination" />
+              <img src="images/sessions.png" alt="Sessions table with search, filters, status badges, and pagination" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">📋</span> Sessions table — searchable, filterable, paginated</div>
             </div>
             <div class="screenshot-card">
-              <img src="images/session.png" alt="Session detail view with agent hierarchy tree and event timeline" />
+              <img src="images/session.png" alt="Session detail view with agent hierarchy tree and event timeline" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">🔬</span> Session detail — agent tree and event timeline</div>
             </div>
             <div class="screenshot-card">
-              <img src="images/board.png" alt="Kanban board showing agents in Idle, Connected, Working, Completed, and Error columns" />
+              <img src="images/board.png" alt="Kanban board showing agents in Idle, Connected, Working, Completed, and Error columns" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">📂</span> Kanban board — 5-column agent status view</div>
             </div>
             <div class="screenshot-card">
-              <img src="images/feed.png" alt="Real-time activity feed with streaming events, expandable payload rows, and session navigation button" />
+              <img src="images/feed.png" alt="Real-time activity feed with streaming events, expandable payload rows, and session navigation button" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">📰</span> Activity feed — click a row to expand payload; "Session →" button opens session details</div>
             </div>
             <div class="screenshot-card">
-              <img src="images/analytics.png" alt="Analytics dashboard with token usage charts, tool frequency, and session trends" />
+              <img src="images/analytics.png" alt="Analytics dashboard with token usage charts, tool frequency, and session trends" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">📊</span> Analytics — token usage, tool frequency, and trends</div>
             </div>
             <div class="screenshot-card">
-              <img src="images/workflows.png" alt="Workflow graphs showing agent orchestration DAGs and tool execution Sankey diagrams" />
+              <img src="images/workflows.png" alt="Workflow graphs showing agent orchestration DAGs and tool execution Sankey diagrams" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">🔀</span> Workflows — agent DAGs and tool Sankey diagrams</div>
             </div>
           </div>
@@ -1155,7 +1155,7 @@
                   <img
                     alt="GitHub star history chart for Claude Code Agent Monitor"
                     src="https://api.star-history.com/chart?repos=hoangsonww/Claude-Code-Agent-Monitor&type=date&legend=top-left"
-                   
+                    loading="lazy"
                     width="1140"
                     height="560"
                   />
@@ -2779,7 +2779,7 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
 
           <div class="screenshot-gallery gallery-single">
             <div class="screenshot-card">
-              <img src="images/import.png" alt="Settings page Import History section showing rescan default folder, scan custom path, and upload controls with progress output" />
+              <img src="images/import.png" alt="Settings page Import History section showing rescan default folder, scan custom path, and upload controls with progress output" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">📥</span> Settings → Import History — rescan, custom path, and upload controls feeding the shared pipeline</div>
             </div>
           </div>
@@ -3053,7 +3053,7 @@ npm run mcp:start:repl         # interactive CLI with tab completion</code></pre
 
           <div class="screenshot-gallery gallery-single">
             <div class="screenshot-card">
-              <img src="images/mcp.png" alt="MCP Server interactive REPL showing the MCP Tools banner, server info, and tool listing with colored output" />
+              <img src="images/mcp.png" alt="MCP Server interactive REPL showing the MCP Tools banner, server info, and tool listing with colored output" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">🔧</span> MCP Server REPL — interactive tool invocation with colored output</div>
             </div>
           </div>
@@ -3421,7 +3421,7 @@ ccam-export all --output backup.json</code></pre>
 
           <div class="screenshot-gallery gallery-single">
             <div class="screenshot-card">
-              <img src="images/statusline.png" alt="CLI statusline showing model, user, git branch, context window bar, and token counts" />
+              <img src="images/statusline.png" alt="CLI statusline showing model, user, git branch, context window bar, and token counts" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">🖥️</span> Statusline — context window, tokens, git branch at a glance</div>
             </div>
           </div>
@@ -3539,7 +3539,7 @@ ccam-export all --output backup.json</code></pre>
 
           <div class="screenshot-gallery gallery-single">
             <div class="screenshot-card" style="border-radius: 20px; overflow: hidden; border: 1px solid var(--border);">
-              <img src="vscode-extension/vscode.png" alt="VS Code Extension sidebar showing live health, analytics, and navigation" />
+              <img src="vscode-extension/vscode.png" alt="VS Code Extension sidebar showing live health, analytics, and navigation" loading="lazy" />
               <div class="screenshot-caption" style="background: rgba(99, 102, 241, 0.08); border-top: 1px solid var(--border);"><span class="caption-icon">🔌</span> Sidebar — live health, analytics, and deep navigation links</div>
             </div>
           </div>
@@ -3624,7 +3624,7 @@ ccam-export all --output backup.json</code></pre>
 
           <div class="screenshot-gallery gallery-single">
             <div class="screenshot-card">
-              <img src="images/settings.png" alt="Settings page with model pricing editor, hook status, data management, and system info" />
+              <img src="images/settings.png" alt="Settings page with model pricing editor, hook status, data management, and system info" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">⚙️</span> Settings — pricing, hooks, data management, and system info</div>
             </div>
           </div>
@@ -3711,7 +3711,7 @@ ccam-export all --output backup.json</code></pre>
 
           <div class="screenshot-gallery gallery-single">
             <div class="screenshot-card">
-              <img src="images/update.png" alt="Update modal showing commits-behind count and copy-to-clipboard command" />
+              <img src="images/update.png" alt="Update modal showing commits-behind count and copy-to-clipboard command" loading="lazy" />
               <div class="screenshot-caption"><span class="caption-icon">⬆</span> Update Notifier — copy-the-command modal, no self-restart</div>
             </div>
           </div>
@@ -4467,7 +4467,7 @@ npm run install-hooks</code></pre>
     </div>
     <!-- /.wiki-layout -->
 
-    <script src="wiki/script.js?v=6"></script>
+    <script src="wiki/script.js?v=5"></script>
     <script>
       /* ─── Feature Carousel ──────────────────────────────────────────────── */
       (function () {
