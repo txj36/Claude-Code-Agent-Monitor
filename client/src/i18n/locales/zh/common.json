@@ -76,6 +76,8 @@
     "s": "{{s}}秒"
   },
   "eventDetail": {
+    "summary": "摘要",
+    "seeDetailsBelow": "完整详情请看下方 {{fields}}",
     "eventId": "事件 ID",
     "sessionId": "会话 ID",
     "agentId": "Agent ID",
@@ -114,6 +116,15 @@
     "help": {
       "toggle": "帮助",
       "title": "关于事件、筛选与分组",
+      "subtitle": "点击展开 — 状态、生命周期、筛选语义、筛选取值",
+      "valuesTitle": "每个筛选器接受什么",
+      "valueStatusDesc": "展开为 event_type 的快捷方式 (Working → PreToolUse, Completed → Stop/SubagentStop/Compaction, …)。",
+      "valueEventTypeDesc": "数据库中实际的 event_type 值。从 /api/events/facets 获取。",
+      "valueToolNameDesc": "数据库中出现的 tool_name 值 (Bash、Edit、Read、Grep、mcp__…)。从 /api/events/facets 获取。",
+      "valueAgentIdDesc": "完整的 agent UUID (main 和 subagent)。选择以限定到特定 agent。",
+      "valueSessionIdDesc": "会话 UUID。通常直接进入 /sessions/:id,但这里可以交集多个会话。",
+      "valueSearchDesc": "对 summary、tool_name 和原始 JSON payload 的子串匹配。防抖 300ms。",
+      "valueDateRangeDesc": "事件 created_at 的 ISO 日期时间上下界。",
       "statusesTitle": "状态徽章",
       "statusesIntro": "状态由 event_type 派生。",
       "statusWorkingDesc": "Agent 开始调用工具 (PreToolUse)。",

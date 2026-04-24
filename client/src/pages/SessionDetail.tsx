@@ -31,8 +31,16 @@ import {
   expandStatusToEventTypes,
 } from "../components/EventFilters";
 import type { EventFiltersValue } from "../components/EventFilters";
+import { EventFiltersInfo } from "../components/EventFiltersInfo";
 import { EventGroupRow } from "../components/EventGroupRow";
-import { groupEvents } from "../lib/event-grouping";
+import {
+  agentOriginLabel,
+  buildEventTitle,
+  buildOriginLabel,
+  groupEvents,
+  projectFromEvent,
+} from "../lib/event-grouping";
+import type { AgentInfo } from "../lib/event-grouping";
 import { formatDateTime, formatDuration, fmtCostFull, timeAgo } from "../lib/format";
 import type { Session, Agent, DashboardEvent, SessionStatus, CostResult } from "../lib/types";
 
@@ -131,6 +139,16 @@ export function SessionDetail() {
   eventApiParamsRef.current = eventApiParams;
 
   const eventGroups = useMemo(() => groupEvents(events), [events]);
+
+  // Build an AgentInfo map from the already-fetched agents list so rows can
+  // render the subagent pill (subagent_type) without an extra fetch.
+  const agentInfoById = useMemo(() => {
+    const map = new Map<string, AgentInfo>();
+    for (const a of agents) {
+      map.set(a.id, { type: a.type, subagent_type: a.subagent_type, name: a.name });
+    }
+    return map;
+  }, [agents]);
 
   const loadEvents = useCallback(async () => {
     if (!eventApiParams) return;
@@ -492,6 +510,9 @@ export function SessionDetail() {
           {t("detail.eventTimeline")} ({events.length}/{eventsTotal})
         </h3>
         <div className="mb-3">
+          <EventFiltersInfo />
+        </div>
+        <div className="mb-3">
           <EventFilters
             value={filters}
             onChange={setFilters}
@@ -535,7 +556,13 @@ export function SessionDetail() {
           <div className="card overflow-hidden">
             <div className="divide-y divide-border max-h-[600px] overflow-y-auto overflow-x-auto">
               {grouped
-                ? eventGroups.map((group) => <EventGroupRow key={group.key} group={group} />)
+                ? eventGroups.map((group) => (
+                    <EventGroupRow
+                      key={group.key}
+                      group={group}
+                      agentInfoById={agentInfoById}
+                    />
+                  ))
                 : events.map((event, i) => {
                     const key = event.id ?? i;
                     const isOpen = event.id != null && expandedEvents.has(event.id);
@@ -572,9 +599,33 @@ export function SessionDetail() {
                                     : "connected"
                             }
                           />
-                          <span className="text-sm text-gray-300 flex-1 truncate">
-                            {event.summary || event.event_type}
-                          </span>
+                          {(() => {
+                            const info = event.agent_id
+                              ? agentInfoById.get(event.agent_id)
+                              : undefined;
+                            // Session is implicit on this page — project is
+                            // still shown so the row identifies the working
+                            // directory when you share / search.
+                            const project = projectFromEvent(event);
+                            const origin = buildOriginLabel(
+                              project,
+                              null,
+                              agentOriginLabel(event.agent_id, info)
+                            );
+                            return (
+                              <span className="text-sm text-gray-300 flex-1 truncate">
+                                {origin && (
+                                  <span
+                                    className="text-gray-500 mr-1"
+                                    title={event.agent_id ?? undefined}
+                                  >
+                                    {origin} ·
+                                  </span>
+                                )}
+                                {buildEventTitle(event)}
+                              </span>
+                            );
+                          })()}
                           {event.tool_name && (
                             <span className="text-[11px] px-2 py-0.5 bg-surface-2 rounded text-gray-500 font-mono">
                               {event.tool_name}

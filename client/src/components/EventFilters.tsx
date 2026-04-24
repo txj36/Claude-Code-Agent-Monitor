@@ -9,9 +9,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, X, Filter, Info } from "lucide-react";
+import { Search, X, Filter } from "lucide-react";
 import { api } from "../lib/api";
-import { AgentStatusBadge } from "./StatusBadge";
 
 export type EventFiltersValue = {
   event_type: string[];
@@ -100,7 +99,6 @@ export function EventFilters({
     tool_names: [],
   });
   const [searchDraft, setSearchDraft] = useState(value.q);
-  const [showHelp, setShowHelp] = useState(false);
 
   // Debounce text search — only push up after 300ms of inactivity.
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -190,20 +188,6 @@ export function EventFilters({
             {t("eventFilters.clearAll")}
           </button>
         )}
-        <button
-          type="button"
-          onClick={() => setShowHelp((v) => !v)}
-          aria-expanded={showHelp}
-          aria-controls="event-filters-help"
-          className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded cursor-pointer ${
-            showHelp
-              ? "bg-accent/15 text-accent"
-              : "text-gray-400 hover:text-gray-200 hover:bg-surface-2"
-          }`}
-        >
-          <Info className="w-3 h-3" />
-          {t("eventFilters.help.toggle")}
-        </button>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -251,73 +235,6 @@ export function EventFilters({
         )}
       </div>
 
-      {showHelp && <HelpPanel />}
-    </div>
-  );
-}
-
-function HelpPanel() {
-  const { t } = useTranslation("common");
-  return (
-    <div
-      id="event-filters-help"
-      className="mt-2 p-3 border border-border rounded bg-surface-2/60 text-[12px] text-gray-300 space-y-3"
-    >
-      <h3 className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-        {t("eventFilters.help.title")}
-      </h3>
-
-      <section>
-        <h4 className="text-[11px] font-semibold text-gray-200 mb-1.5">
-          {t("eventFilters.help.statusesTitle")}
-        </h4>
-        <p className="text-[11px] text-gray-500 mb-2">{t("eventFilters.help.statusesIntro")}</p>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[11px]">
-          <dt>
-            <AgentStatusBadge status="working" />
-          </dt>
-          <dd className="self-center">{t("eventFilters.help.statusWorkingDesc")}</dd>
-          <dt>
-            <AgentStatusBadge status="connected" />
-          </dt>
-          <dd className="self-center">{t("eventFilters.help.statusConnectedDesc")}</dd>
-          <dt>
-            <AgentStatusBadge status="completed" />
-          </dt>
-          <dd className="self-center">{t("eventFilters.help.statusCompletedDesc")}</dd>
-          <dt>
-            <AgentStatusBadge status="error" />
-          </dt>
-          <dd className="self-center">{t("eventFilters.help.statusErrorDesc")}</dd>
-          <dt>
-            <AgentStatusBadge status="idle" />
-          </dt>
-          <dd className="self-center">{t("eventFilters.help.statusIdleDesc")}</dd>
-        </dl>
-      </section>
-
-      <section>
-        <h4 className="text-[11px] font-semibold text-gray-200 mb-1.5">
-          {t("eventFilters.help.lifecycleTitle")}
-        </h4>
-        <p className="text-[11px] text-gray-400 mb-1">{t("eventFilters.help.lifecycleDesc")}</p>
-        <code className="block bg-black/40 border border-border rounded p-2 text-[11px] font-mono text-gray-300 whitespace-pre-wrap">
-          {t("eventFilters.help.lifecycleFlow")}
-        </code>
-      </section>
-
-      <section>
-        <h4 className="text-[11px] font-semibold text-gray-200 mb-1.5">
-          {t("eventFilters.help.filtersTitle")}
-        </h4>
-        <ul className="list-disc pl-5 space-y-1 text-[11px] text-gray-400">
-          <li>{t("eventFilters.help.filterTip1")}</li>
-          <li>{t("eventFilters.help.filterTip2")}</li>
-          <li className="text-amber-300/90">{t("eventFilters.help.filterTipGrouping")}</li>
-          <li>{t("eventFilters.help.filterTip3")}</li>
-          <li>{t("eventFilters.help.filterTip4")}</li>
-        </ul>
-      </section>
     </div>
   );
 }

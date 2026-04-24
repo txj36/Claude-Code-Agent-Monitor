@@ -76,6 +76,8 @@
     "s": "{{s}}s"
   },
   "eventDetail": {
+    "summary": "Tóm tắt",
+    "seeDetailsBelow": "Xem chi tiết đầy đủ bên dưới trong {{fields}}",
     "eventId": "ID sự kiện",
     "sessionId": "ID phiên",
     "agentId": "ID Agent",
@@ -114,6 +116,15 @@
     "help": {
       "toggle": "Trợ giúp",
       "title": "Về sự kiện, bộ lọc và nhóm",
+      "subtitle": "Nhấn để mở — trạng thái, vòng đời, ngữ nghĩa bộ lọc, giá trị bộ lọc",
+      "valuesTitle": "Mỗi bộ lọc chấp nhận gì",
+      "valueStatusDesc": "Lối tắt mở rộng thành event_type (Working → PreToolUse, Completed → Stop/SubagentStop/Compaction, …).",
+      "valueEventTypeDesc": "Giá trị event_type thực có trong DB. Lấy từ /api/events/facets.",
+      "valueToolNameDesc": "Giá trị tool_name có trong DB (Bash, Edit, Read, Grep, mcp__…). Lấy từ /api/events/facets.",
+      "valueAgentIdDesc": "UUID đầy đủ của agent (main + subagent). Chọn để giới hạn theo các agent cụ thể.",
+      "valueSessionIdDesc": "UUID của phiên. Thường bạn sẽ vào /sessions/:id, nhưng cái này cho phép giao nhiều phiên.",
+      "valueSearchDesc": "Khớp chuỗi con trong summary, tool_name và payload JSON thô. Debounce 300ms.",
+      "valueDateRangeDesc": "Mốc thời gian ISO dưới/trên cho created_at của sự kiện.",
       "statusesTitle": "Trạng thái",
       "statusesIntro": "Trạng thái được suy ra từ event_type.",
       "statusWorkingDesc": "Agent bắt đầu gọi công cụ (PreToolUse).",

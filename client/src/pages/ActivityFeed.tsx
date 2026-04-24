@@ -24,8 +24,16 @@ import {
   expandStatusToEventTypes,
 } from "../components/EventFilters";
 import type { EventFiltersValue } from "../components/EventFilters";
+import { EventFiltersInfo } from "../components/EventFiltersInfo";
 import { EventGroupRow } from "../components/EventGroupRow";
-import { groupEvents } from "../lib/event-grouping";
+import {
+  agentOriginLabel,
+  buildEventTitle,
+  buildOriginLabel,
+  groupEvents,
+  projectFromEvent,
+} from "../lib/event-grouping";
+import type { AgentInfo } from "../lib/event-grouping";
 import { formatTime, timeAgo } from "../lib/format";
 import type { DashboardEvent, AgentStatus } from "../lib/types";
 
@@ -51,6 +59,13 @@ export function ActivityFeed() {
   const [bufferCount, setBufferCount] = useState(0);
   const [grouped, setGrouped] = useState(true);
   const [expandedEvents, setExpandedEvents] = useState<Set<number>>(() => new Set());
+  // session_id → session name. Populated from /api/sessions on mount so rows
+  // can render a friendly session pill instead of a bare UUID.
+  const [sessionNameById, setSessionNameById] = useState<Map<string, string>>(() => new Map());
+  // agent_id → subagent-facing info. Populated from /api/agents on mount so the
+  // subagent pill can show subagent_type (e.g. "frontend-reviewer") instead of
+  // a raw ID. Main agents intentionally yield no pill.
+  const [agentInfoById, setAgentInfoById] = useState<Map<string, AgentInfo>>(() => new Map());
 
   const bufferRef = useRef<DashboardEvent[]>([]);
   const pausedRef = useRef(paused);
@@ -110,6 +125,43 @@ export function ActivityFeed() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.sessions
+      .list({ limit: 500 })
+      .then(({ sessions }) => {
+        if (cancelled) return;
+        const map = new Map<string, string>();
+        for (const s of sessions) {
+          if (s.name) map.set(s.id, s.name);
+        }
+        setSessionNameById(map);
+      })
+      .catch(() => {
+        // Non-fatal: rows just render without the session name pill.
+      });
+    api.agents
+      .list({ limit: 1000 })
+      .then(({ agents }) => {
+        if (cancelled) return;
+        const map = new Map<string, AgentInfo>();
+        for (const a of agents) {
+          map.set(a.id, {
+            type: a.type,
+            subagent_type: a.subagent_type,
+            name: a.name,
+          });
+        }
+        setAgentInfoById(map);
+      })
+      .catch(() => {
+        // Non-fatal: subagent pills fall back to the short-id label.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const loadMore = useCallback(async () => {
     setLoadingMore(true);
@@ -228,8 +280,19 @@ export function ActivityFeed() {
         </div>
       </div>
 
+      <div className="mb-3">
+        <EventFiltersInfo />
+      </div>
+
       <div className="mb-4">
-        <EventFilters value={filters} onChange={setFilters} />
+        <EventFilters
+          value={filters}
+          onChange={setFilters}
+          sessionOptions={Array.from(sessionNameById.entries()).map(([id, label]) => ({
+            id,
+            label,
+          }))}
+        />
       </div>
 
       <div className="flex items-center gap-2 mb-3 px-1">
@@ -276,7 +339,14 @@ export function ActivityFeed() {
           <div className="card overflow-hidden">
             <div className="divide-y divide-border max-h-[calc(100vh-380px)] overflow-y-auto overflow-x-auto">
               {grouped
-                ? groups.map((group) => <EventGroupRow key={group.key} group={group} />)
+                ? groups.map((group) => (
+                    <EventGroupRow
+                      key={group.key}
+                      group={group}
+                      sessionNameById={sessionNameById}
+                      agentInfoById={agentInfoById}
+                    />
+                  ))
                 : events.map((event, i) => {
                     const isOpen = event.id != null && expandedEvents.has(event.id);
                     return (
@@ -306,11 +376,33 @@ export function ActivityFeed() {
 
                           <AgentStatusBadge status={statusFromEventType(event.event_type)} />
 
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-300 truncate">
-                              {event.summary || event.event_type}
-                            </p>
-                          </div>
+                          {(() => {
+                            const sname = sessionNameById.get(event.session_id);
+                            const info = event.agent_id
+                              ? agentInfoById.get(event.agent_id)
+                              : undefined;
+                            const project = projectFromEvent(event);
+                            const origin = buildOriginLabel(
+                              project,
+                              sname ?? null,
+                              agentOriginLabel(event.agent_id, info)
+                            );
+                            return (
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-gray-300 truncate">
+                                  {origin && (
+                                    <span
+                                      className="text-gray-500 mr-1"
+                                      title={`${event.session_id} · ${event.agent_id ?? ""}`}
+                                    >
+                                      {origin} ·
+                                    </span>
+                                  )}
+                                  {buildEventTitle(event)}
+                                </p>
+                              </div>
+                            );
+                          })()}
 
                           {event.tool_name && (
                             <span className="text-[11px] px-2 py-0.5 bg-surface-2 rounded text-gray-500 font-mono flex-shrink-0">
