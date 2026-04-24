@@ -3725,24 +3725,25 @@ ccam-export all --output backup.json</code></pre>
           </p>
 
           <div class="diagram-wrap">
-            <pre class="mermaid">
-flowchart LR
-    S["Server start"] --> SCHED["Scheduler every 5 min"]
-    SCHED --> FETCH["git fetch prune<br/>120s timeout"]
-    FETCH --> CMP["Compare HEAD vs upstream"]
-    CMP --> DECIDE["Behind or up-to-date"]
-    DECIDE -->|behind| CHANGED["Fingerprint compared"]
-    DECIDE -->|up-to-date| IDLE["No action"]
-    CHANGED -->|changed| WS["Broadcast update_status"]
-    CHANGED -->|same| IDLE
-    WS --> UI["Modal and Sidebar badge"]
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              flowchart LR
+                S["Server start"]:::mid --> SCHED["Scheduler\nevery 5 min"]:::mid
+                SCHED --> FETCH["git fetch\n120s timeout"]:::mid
+                FETCH --> CMP["Compare HEAD\nvs upstream"]:::mid
+                CMP -->|"behind"| CHANGED["Fingerprint\ncompared"]:::mid
+                CMP -->|"current"| IDLE["Idle"]:::mid
+                CHANGED -->|"changed"| WS["Broadcast\nupdate_status"]:::accent
+                CHANGED -->|"same"| IDLE
+                WS --> UI["Modal and\nSidebar badge"]:::ui
+                CHECK["POST check"]:::mid --> FETCH
+                STATUS["GET status"]:::mid --> CMP
 
-    CHECK["POST updates check"] --> FETCH
-    STATUS["GET updates status"] -.-> CMP
-
-    style WS fill:#6366f1,stroke:#818cf8,color:#fff
-    style UI fill:#10b981,stroke:#34d399,color:#fff
-            </pre>
+                classDef mid fill:#1a1a2b,stroke:#2e2e48,color:#e2e2f0
+                classDef accent fill:#6366f1,stroke:#818cf8,color:#fff
+                classDef ui fill:#10b981,stroke:#34d399,color:#fff
+            </div>
+            <p class="diagram-label">Detection pipeline from scheduler to UI</p>
           </div>
 
           <div class="feature-grid">
