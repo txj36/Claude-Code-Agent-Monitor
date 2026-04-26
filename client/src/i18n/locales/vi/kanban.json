@@ -17,6 +17,7 @@
   "sessionCount_plural": "Đã theo dõi {{count}} phiên",
   "noSessionsInColumn": "Không có phiên",
   "ran": "đã chạy ",
+  "running": "đang chạy ",
   "session": {
     "anonymous": "Phiên chưa đặt tên",
     "agentSummary_one": "{{count}} Agent",

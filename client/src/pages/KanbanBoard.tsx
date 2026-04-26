@@ -64,8 +64,14 @@ export function KanbanBoard() {
   }, []);
 
   const loadSessions = useCallback(async () => {
+    // Each column needs the full set for its status — column-level
+    // pagination ("show more") is handled client-side at COLUMN_PAGE_SIZE.
+    // Wire-limit raised to the server's safety cap (10000); cost
+    // computation on the server scales with returned rows, so each
+    // column's request stays bounded by how many sessions actually have
+    // that status.
     const results = await Promise.all(
-      SESSION_COLUMNS.map((status) => api.sessions.list({ status }))
+      SESSION_COLUMNS.map((status) => api.sessions.list({ status, limit: 10000 }))
     );
     setSessions(results.flatMap((r) => r.sessions));
   }, []);

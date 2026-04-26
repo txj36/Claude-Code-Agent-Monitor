@@ -17,6 +17,7 @@
   "sessionCount_plural": "已追踪 {{count}} 个会话",
   "noSessionsInColumn": "暂无会话",
   "ran": "运行了 ",
+  "running": "运行中 ",
   "session": {
     "anonymous": "未命名会话",
     "agentSummary_one": "{{count}} 个 Agent",

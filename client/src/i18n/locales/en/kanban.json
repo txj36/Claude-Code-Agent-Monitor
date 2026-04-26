@@ -17,6 +17,7 @@
   "sessionCount_plural": "{{count}} sessions tracked",
   "noSessionsInColumn": "No sessions",
   "ran": "ran ",
+  "running": "running ",
   "session": {
     "anonymous": "Untitled session",
     "agentSummary_one": "{{count}} agent",

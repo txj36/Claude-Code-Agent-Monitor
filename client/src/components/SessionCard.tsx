@@ -91,11 +91,14 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
             {formatCost(session.cost)}
           </span>
         )}
-        <span className="flex items-center gap-1 flex-shrink-0 ml-auto">
+        <span className="flex items-center gap-1 flex-shrink-0">
           <Clock className="w-3 h-3" />
           {session.ended_at
             ? `${t("ran")}${formatDuration(session.started_at, session.ended_at)}`
-            : timeAgo(lastActivity)}
+            : `${t("running")}${formatDuration(session.started_at, new Date().toISOString())}`}
+        </span>
+        <span className="text-gray-600 flex-shrink-0 ml-auto">
+          {timeAgo(session.ended_at || lastActivity)}
         </span>
       </div>
     </div>
