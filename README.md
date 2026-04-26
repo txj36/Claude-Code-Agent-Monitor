@@ -133,34 +133,56 @@ Comes with a sleek dark theme, responsive design, and intuitive navigation to ex
 
 <p align="center">
   <img src="images/dashboard.png" alt="Dashboard Overview" width="100%">
+  <br>
+  <em>📡 <strong>Dashboard</strong> — overview stats, active agent cards, and recent activity feed</em>
 </p>
 
 <p align="center">
-  <img src="images/board.png" alt="Board Overview" width="100%">
+  <img src="images/board.png" alt="Kanban Board — Agents view" width="100%">
+  <br>
+  <em>📋 <strong>Kanban Board (agents)</strong> — agents grouped by status across 5 columns: Idle / Connected / Working / Completed / Error</em>
+</p>
+
+<p align="center">
+  <img src="images/board-sessions.png" alt="Kanban Board — Sessions view" width="100%">
+  <br>
+  <em>🗂️ <strong>Kanban Board (sessions)</strong> — sessions grouped by status: Active / Completed / Error / Abandoned, toggleable from the same page</em>
 </p>
 
 <p align="center">
   <img src="images/sessions.png" alt="Sessions Overview" width="100%">
+  <br>
+  <em>📂 <strong>Sessions</strong> — searchable, filterable, server-paginated table of every recorded session with cost, model, agent count, and duration</em>
 </p>
 
 <p align="center">
   <img src="images/session.png" alt="Session Detail Overview" width="100%">
+  <br>
+  <em>🔬 <strong>Session Detail</strong> — full agent hierarchy tree and chronological event timeline with multi-dimension filters and tool-aware payload renderers</em>
 </p>
 
 <p align="center">
   <img src="images/feed.png" alt="Activity Feed Overview" width="100%">
+  <br>
+  <em>📰 <strong>Activity Feed</strong> — real-time event log with pause / resume, grouping, multi-dimension filters, and a "Session →" jump button per row</em>
 </p>
 
 <p align="center">
   <img src="images/analytics.png" alt="Analytics Overview" width="100%">
+  <br>
+  <em>📊 <strong>Analytics</strong> — token usage by model, tool frequency, activity heatmap, and session trends with live / offline indicator</em>
 </p>
 
 <p align="center">
-  <img src="images/workflows.png" alt="Analytics Overview" width="100%">
+  <img src="images/workflows.png" alt="Workflows Overview" width="100%">
+  <br>
+  <em>🔀 <strong>Workflows</strong> — agent orchestration DAGs, tool execution Sankey diagrams, collaboration networks, and 11 interactive sections of workflow intelligence</em>
 </p>
 
 <p align="center">
   <img src="images/settings.png" alt="Settings Overview" width="100%">
+  <br>
+  <em>⚙️ <strong>Settings</strong> — model pricing rules, hook installation status, data management, notification preferences, and system info</em>
 </p>
 
 The sidebar provides quick access to the Dashboard, Kanban Board, Sessions list, Activity Feed, Analytics, Workflows, and Settings. Each page is designed to give you deep insights into your Claude Code agent activity with real-time updates and rich visualizations.
@@ -174,8 +196,8 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 | Feature                            | Description                                                                                                                                                                                                                                                                  |
 |------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Dashboard**                      | Overview stats, active agent cards with collapsible subagent hierarchy, recent activity feed                                                                                                                                                                                 |
-| **Kanban Board**                   | 5-column agent status board with paginated columns, per-status fetching (no artificial limits)                                                                                                                                                                               |
-| **Sessions**                       | Searchable, filterable, paginated table of all Claude Code sessions                                                                                                                                                                                                          |
+| **Kanban Board**                   | Two views with a header toggle (persisted in `localStorage`): **Agents** — 5 columns (Idle / Connected / Working / Completed / Error) — and **Sessions** — 4 columns (Active / Completed / Error / Abandoned). Each column fetches its own status from the server (effectively unlimited per status), then paginates client-side at 10 cards per column with a "Show more" affordance. WS subscription scopes to the active view (`agent_*` vs `session_*` frames) so off-view updates don't trigger refetches |
+| **Sessions**                       | Searchable, filterable, **server-paginated** table of every recorded session. Each page click hits `/api/sessions?status=&q=&limit=10&offset=…`, so cost computation runs only over the visible page — independent of how many sessions exist in the database. The search box (`q=`) does case-insensitive matching across `id` / `name` / `cwd` on the server with a 300 ms debounce, and the response carries a `total` count for the paginator UI. Status filter, search, and pagination compose. |
 | **Session Detail**                 | Per-session agent hierarchy tree and full event timeline with multi-dimension filters (status, event type, tool, agent, text search, date range), Pre/Post grouping by `tool_use_id`, human-readable summary block, and tool-aware input/response renderers (terminal for Bash, unified diff for Edit, line-numbered code for Read/Write, match list for Grep, key/value card for MCP tools) |
 | **Activity Feed**                  | Real-time streaming event log with pause/resume, multi-dimension filters (same toolbar as Session Detail plus a Session filter), server-driven "Load more" pagination, debounced filter-aware live refresh preserving the loaded page size, grouping toggle, origin prefix showing project › session › subagent, and a "Session →" button per row                                         |
 | **Analytics**                      | Token usage, tool frequency, activity heatmap (centered, day-of-week aligned starting Sunday, day-name tooltips), session trends, live/offline connection indicator                                                                                                           |
@@ -690,7 +712,7 @@ The OpenAPI document is generated from `server/openapi.js`, and Swagger UI is se
 
 | Method  | Path                | Query Params                | Description                           |
 | ------- | ------------------- | --------------------------- | ------------------------------------- |
-| `GET`   | `/api/sessions`     | `status`, `limit`, `offset` | List sessions with agent counts       |
+| `GET`   | `/api/sessions`     | `status`, `q`, `limit`, `offset` | List sessions with agent counts and per-session cost. `q` does case-insensitive search across `id` / `name` / `cwd`. `limit` defaults to 50, max 10000. Response includes `total` for paginators. |
 | `GET`   | `/api/sessions/:id` | --                          | Session detail with agents and events |
 | `POST`  | `/api/sessions`     | --                          | Create session (idempotent on `id`)   |
 | `PATCH` | `/api/sessions/:id` | --                          | Update session status/metadata        |
@@ -1219,8 +1241,8 @@ graph TD
 ```mermaid
 graph LR
     ROOT["/ (index)"] --> DASH["Dashboard<br/>stats + agents + events"]
-    K["/kanban"] --> KANBAN["KanbanBoard<br/>5-column agent board"]
-    S["/sessions"] --> SESS["Sessions<br/>filterable table"]
+    K["/kanban"] --> KANBAN["KanbanBoard<br/>agents/sessions toggle"]
+    S["/sessions"] --> SESS["Sessions<br/>server-paginated table"]
     D["/sessions/:id"] --> DETAIL["SessionDetail<br/>agents + timeline + cost"]
     A["/activity"] --> ACT["ActivityFeed<br/>streaming event log"]
     AN["/analytics"] --> ANALYTICS["Analytics<br/>tokens + heatmap + trends"]
@@ -1457,8 +1479,8 @@ agent-dashboard/
 |       |       +-- SessionDrillIn.tsx              # Per-session agent tree, tool timeline, events
 |       +-- pages/
 |           |-- Dashboard.tsx      # Overview page
-|           |-- KanbanBoard.tsx    # Agent status columns
-|           |-- Sessions.tsx       # Sessions table
+|           |-- KanbanBoard.tsx    # Agents/Sessions toggle, status columns
+|           |-- Sessions.tsx       # Server-paginated sessions table
 |           |-- SessionDetail.tsx  # Single session deep dive
 |           |-- ActivityFeed.tsx   # Real-time event stream
 |           |-- Analytics.tsx      # Token usage, heatmap, trends

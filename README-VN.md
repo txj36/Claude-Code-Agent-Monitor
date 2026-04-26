@@ -134,34 +134,56 @@ flowchart LR
 
 <p align="center">
   <img src="images/dashboard.png" alt="Dashboard Overview" width="100%">
+  <br>
+  <em>📡 <strong>Dashboard</strong> — số liệu tổng hợp, thẻ Agent đang hoạt động và luồng hoạt động gần đây</em>
 </p>
 
 <p align="center">
-  <img src="images/board.png" alt="Board Overview" width="100%">
+  <img src="images/board.png" alt="Bảng Kanban — chế độ Agent" width="100%">
+  <br>
+  <em>📋 <strong>Bảng Kanban (Agent)</strong> — Agent xếp theo trạng thái trên 5 cột: Nhàn rỗi / Đã kết nối / Đang làm / Hoàn tất / Lỗi</em>
+</p>
+
+<p align="center">
+  <img src="images/board-sessions.png" alt="Bảng Kanban — chế độ Phiên" width="100%">
+  <br>
+  <em>🗂️ <strong>Bảng Kanban (Phiên)</strong> — phiên xếp theo trạng thái: Hoạt động / Hoàn tất / Lỗi / Bỏ dở, chuyển đổi trên cùng một trang</em>
 </p>
 
 <p align="center">
   <img src="images/sessions.png" alt="Sessions Overview" width="100%">
+  <br>
+  <em>📂 <strong>Phiên</strong> — bảng liệt kê toàn bộ phiên có tìm kiếm, bộ lọc và phân trang phía máy chủ, kèm chi phí, mô hình, số lượng Agent và thời lượng</em>
 </p>
 
 <p align="center">
   <img src="images/session.png" alt="Session Detail Overview" width="100%">
+  <br>
+  <em>🔬 <strong>Chi tiết phiên</strong> — cây phân cấp Agent đầy đủ và dòng thời gian sự kiện theo trình tự, có bộ lọc đa chiều và bộ render tải trọng nhận biết công cụ</em>
 </p>
 
 <p align="center">
   <img src="images/feed.png" alt="Activity Feed Overview" width="100%">
+  <br>
+  <em>📰 <strong>Luồng hoạt động</strong> — nhật ký sự kiện thời gian thực có tạm dừng / tiếp tục, gom nhóm, bộ lọc đa chiều và nút "Phiên →" trên mỗi dòng</em>
 </p>
 
 <p align="center">
   <img src="images/analytics.png" alt="Analytics Overview" width="100%">
+  <br>
+  <em>📊 <strong>Phân tích</strong> — lượng token theo mô hình, tần suất công cụ, bản đồ nhiệt hoạt động và xu hướng phiên kèm chỉ báo trực tuyến / ngoại tuyến</em>
 </p>
 
 <p align="center">
-  <img src="images/workflows.png" alt="Analytics Overview" width="100%">
+  <img src="images/workflows.png" alt="Workflows Overview" width="100%">
+  <br>
+  <em>🔀 <strong>Quy trình</strong> — DAG điều phối Agent, sơ đồ Sankey thi hành công cụ, mạng cộng tác và 11 mô-đun trí tuệ quy trình tương tác</em>
 </p>
 
 <p align="center">
   <img src="images/settings.png" alt="Settings Overview" width="100%">
+  <br>
+  <em>⚙️ <strong>Cài đặt</strong> — quy tắc định giá mô hình, trạng thái cài đặt Hook, quản lý dữ liệu, tuỳ chọn thông báo và thông tin hệ thống</em>
 </p>
 
 Thanh bên cung cấp quyền truy cập nhanh vào Trang tổng quan, Bảng Kanban, danh sách Phiên, Nguồn cấp dữ liệu hoạt động, Phân tích, Quy trình công việc và Cài đặt. Mỗi trang được thiết kế để cung cấp cho bạn những hiểu biết sâu sắc về hoạt động Agent Claude Code của bạn với các cập nhật theo thời gian thực và hình ảnh trực quan phong phú.
@@ -175,8 +197,8 @@ Bảng điều khiển cung cấp một bộ tính năng toàn diện để giá
 | Tính năng                            | Sự miêu tả                                                                                                                                                                                                                                                                  |
 |------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Bảng điều khiển**                      | Số liệu thống kê tổng quan, thẻ Agent đang hoạt động với hệ thống phân cấp Subagent có thể thu gọn, nguồn cấp dữ liệu hoạt động gần đây                                                                                                                                                                                 |
-| **Bảng Kanban**                   | Bảng trạng thái Agent 5 cột với các cột được phân trang, tìm nạp theo trạng thái (không có giới hạn nhân tạo)                                                                                                                                                                               |
-| **Phiên**                       | Bảng có thể tìm kiếm, lọc, phân trang của tất cả các phiên Claude Code                                                                                                                                                                                                          |
+| **Bảng Kanban**                   | Hai chế độ với nút chuyển ở đầu trang (lưu trong `localStorage`): **Agent** — 5 cột (Nhàn rỗi / Đã kết nối / Đang làm / Hoàn tất / Lỗi), và **Phiên** — 4 cột (Hoạt động / Hoàn tất / Lỗi / Bỏ dở). Mỗi cột tìm nạp theo trạng thái từ máy chủ (không giới hạn thực tế mỗi cột), sau đó phân trang phía client với 10 thẻ mỗi cột kèm nút "Hiện thêm". Đăng ký WebSocket bám theo chế độ đang xem (`agent_*` so với `session_*`) nên cập nhật khác chế độ không gây tải lại |
+| **Phiên**                       | Bảng toàn bộ phiên có tìm kiếm, bộ lọc và **phân trang phía máy chủ**. Mỗi lần đổi trang gọi `/api/sessions?status=&q=&limit=10&offset=…`, nên tính toán chi phí chỉ chạy trên trang đang hiển thị — không phụ thuộc số phiên trong CSDL. Ô tìm kiếm (`q=`) thực hiện so khớp không phân biệt hoa thường trên `id` / `name` / `cwd` ở máy chủ với debounce 300 ms; phản hồi kèm `total` cho bộ phân trang. Bộ lọc trạng thái, tìm kiếm và phân trang kết hợp với nhau |
 | **Chi tiết phiên**                 | Cây phân cấp tác nhân mỗi phiên (mẹ/con) và dòng thời gian sự kiện đầy đủ                                                                                                                                                                                                      |
 | **Nguồn cấp dữ liệu hoạt động**                  | Nhật ký sự kiện phát trực tuyến theo thời gian thực với tính năng tạm dừng/tiếp tục và phân trang; nhấp vào bất kỳ hàng sự kiện nào để mở rộng nội dung hook payload ngay tại chỗ (bảng EventDetail nội tuyến); nút "Phiên →" chuyên biệt ở cuối mỗi hàng điều hướng trực tiếp đến chi tiết phiên mà không thu gọn feed                                                                   |
 | **Phân tích**                      | Mức sử dụng mã thông báo, tần suất công cụ, bản đồ nhiệt hoạt động (trung tâm, căn chỉnh ngày trong tuần bắt đầu từ Chủ nhật, chú thích công cụ tên ngày), xu hướng phiên, chỉ báo kết nối trực tiếp/ngoại tuyến                                                                                                           |
@@ -686,7 +708,7 @@ Tài liệu OpenAPI được tạo từ `server/openapi.js` và giao diện ngư
 
 | Phương pháp  | Con đường                | Thông số truy vấn                | Sự miêu tả                           |
 | ------- | ------------------- | --------------------------- | ------------------------------------- |
-| `GET`   | `/api/sessions`     | `status`, `limit`, `offset` | Liệt kê các phiên có số lượng Agent       |
+| `GET`   | `/api/sessions`     | `status`, `q`, `limit`, `offset` | Liệt kê phiên kèm số lượng Agent và chi phí mỗi phiên. `q` tìm không phân biệt hoa thường trên `id` / `name` / `cwd`; `limit` mặc định 50, tối đa 10000; phản hồi gồm `total` cho bộ phân trang |
 | `GET`   | `/api/sessions/:id` | --                          | Chi tiết phiên với các Agent và sự kiện |
 | `POST`  | `/api/sessions`     | --                          | Tạo phiên (idempotent trên `id`)   |
 | `PATCH` | `/api/sessions/:id` | --                          | Cập nhật trạng thái/siêu dữ liệu phiên        |
@@ -1212,7 +1234,7 @@ graph TD
 ```mermaid
 graph LR
     ROOT["/ (index)"] --> DASH["Dashboard<br/>stats + agents + events"]
-    K["/kanban"] --> KANBAN["KanbanBoard<br/>5-column agent board"]
+    K["/kanban"] --> KANBAN["KanbanBoard<br/>chuyển Agent / Phiên"]
     S["/sessions"] --> SESS["Sessions<br/>filterable table"]
     D["/sessions/:id"] --> DETAIL["SessionDetail<br/>agents + timeline + cost"]
     A["/activity"] --> ACT["ActivityFeed<br/>streaming event log"]
@@ -1450,7 +1472,7 @@ agent-dashboard/
 |       |       +-- SessionDrillIn.tsx              # Per-session agent tree, tool timeline, events
 |       +-- pages/
 |           |-- Dashboard.tsx      # Overview page
-|           |-- KanbanBoard.tsx    # Agent status columns
+|           |-- KanbanBoard.tsx    # Cột trạng thái Agent / Phiên với nút chuyển
 |           |-- Sessions.tsx       # Sessions table
 |           |-- SessionDetail.tsx  # Single session deep dive
 |           |-- ActivityFeed.tsx   # Real-time event stream
