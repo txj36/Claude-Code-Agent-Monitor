@@ -29,6 +29,7 @@ interface SessionOverviewProps {
   agents: Agent[];
 }
 
+/** Debounce window for stats refresh — coalesces bursts of hook events into one fetch. */
 const REFRESH_DEBOUNCE_MS = 600;
 
 /** Compact tile used in the top stat row. */
